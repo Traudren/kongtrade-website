@@ -158,21 +158,23 @@ export function TradingConfigSection() {
                   <SelectTrigger className="bg-white/10 border-white/20 text-white">
                     <SelectValue placeholder="Выберите биржу" />
                   </SelectTrigger>
-                  <SelectContent className="glass-effect border-white/20" position="popper" sideOffset={4}>
-                    <SelectItem value="binance" className="text-white cursor-pointer">
+                  <SelectContent className="glass-effect border-white/20" position="popper" side="bottom" align="start" sideOffset={4}>
+                    <SelectItem value="binance" className="text-white cursor-pointer hover:bg-white/10">
                       <div className="flex items-center">
-                        <div className="w-6 h-6 rounded-full bg-yellow-400 mr-2 flex items-center justify-center text-black font-bold text-xs">
-                          B
-                        </div>
-                        Binance
+                        <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#F0B90B"/>
+                          <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#F0B90B"/>
+                        </svg>
+                        <span>Binance</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="bybit" className="text-white cursor-pointer">
+                    <SelectItem value="bybit" className="text-white cursor-pointer hover:bg-white/10">
                       <div className="flex items-center">
-                        <div className="w-6 h-6 rounded-full bg-blue-500 mr-2 flex items-center justify-center text-white font-bold text-xs">
-                          B
-                        </div>
-                        Bybit
+                        <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="12" cy="12" r="10" fill="#F7A600"/>
+                          <path d="M12 6L8 10H12V14H16L12 18V6Z" fill="white"/>
+                        </svg>
+                        <span>Bybit</span>
                       </div>
                     </SelectItem>
                   </SelectContent>

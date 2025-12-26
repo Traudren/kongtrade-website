@@ -28,11 +28,11 @@ export function Header() {
   ]
 
   const resourcesLinks = [
-    { name: 'Documentation', href: '#', icon: '📚' },
-    { name: 'FAQ', href: '#faq', icon: '❓' },
-    { name: 'Support', href: '#contact', icon: '💬' },
-    { name: 'Tutorials', href: '#', icon: '🎓' },
-    { name: 'API Guide', href: '#', icon: '🔧' },
+    { name: 'Documentation', href: 'https://docs.kongtrade.com', icon: '📚', external: true },
+    { name: 'FAQ', href: '#faq', icon: '❓', external: false },
+    { name: 'Support', href: '#contact', icon: '💬', external: false },
+    { name: 'Tutorials', href: 'https://youtube.com/channel/UCbiTXrgXZJzdfJAwjnxIXhg', icon: '🎓', external: true },
+    { name: 'API Guide', href: '/dashboard', icon: '🔧', external: false },
   ]
 
   useEffect(() => {
@@ -95,22 +95,36 @@ export function Header() {
                 <DropdownMenuContent className="glass-effect border-white/20 rounded-xl min-w-[200px]">
                   {resourcesLinks.map((link) => (
                     <DropdownMenuItem key={link.name} asChild>
-                      <Link
-                        href={link.href}
-                        className="text-white rounded-lg text-sm flex items-center cursor-pointer"
-                        onClick={(e) => {
-                          if (link.href.startsWith('#')) {
-                            e.preventDefault()
-                            const element = document.querySelector(link.href)
-                            if (element) {
-                              element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      {link.external ? (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-white rounded-lg text-sm flex items-center cursor-pointer"
+                        >
+                          <span className="mr-2">{link.icon}</span>
+                          {link.name}
+                        </a>
+                      ) : (
+                        <Link
+                          href={link.href}
+                          className="text-white rounded-lg text-sm flex items-center cursor-pointer"
+                          onClick={(e) => {
+                            if (link.href.startsWith('#')) {
+                              e.preventDefault()
+                              setTimeout(() => {
+                                const element = document.querySelector(link.href)
+                                if (element) {
+                                  element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                                }
+                              }, 100)
                             }
-                          }
-                        }}
-                      >
-                        <span className="mr-2">{link.icon}</span>
-                        {link.name}
-                      </Link>
+                          }}
+                        >
+                          <span className="mr-2">{link.icon}</span>
+                          {link.name}
+                        </Link>
+                      )}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -211,26 +225,40 @@ export function Header() {
               <div className="px-3 py-2">
                 <p className="text-gray-300 font-medium mb-2 text-sm">Resources</p>
                 {resourcesLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className="block px-3 py-2 text-gray-400 hover:text-white transition-colors rounded-lg text-sm"
-                    onClick={(e) => {
-                      setIsMobileMenuOpen(false)
-                      if (link.href.startsWith('#')) {
-                        e.preventDefault()
-                        setTimeout(() => {
-                          const element = document.querySelector(link.href)
-                          if (element) {
-                            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                          }
-                        }, 100)
-                      }
-                    }}
-                  >
-                    <span className="mr-2">{link.icon}</span>
-                    {link.name}
-                  </Link>
+                  link.external ? (
+                    <a
+                      key={link.name}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block px-3 py-2 text-gray-400 hover:text-white transition-colors rounded-lg text-sm"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <span className="mr-2">{link.icon}</span>
+                      {link.name}
+                    </a>
+                  ) : (
+                    <Link
+                      key={link.name}
+                      href={link.href}
+                      className="block px-3 py-2 text-gray-400 hover:text-white transition-colors rounded-lg text-sm"
+                      onClick={(e) => {
+                        setIsMobileMenuOpen(false)
+                        if (link.href.startsWith('#')) {
+                          e.preventDefault()
+                          setTimeout(() => {
+                            const element = document.querySelector(link.href)
+                            if (element) {
+                              element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            }
+                          }, 100)
+                        }
+                      }}
+                    >
+                      <span className="mr-2">{link.icon}</span>
+                      {link.name}
+                    </Link>
+                  )
                 ))}
               </div>
               

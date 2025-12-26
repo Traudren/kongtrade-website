@@ -294,7 +294,7 @@ export function SubscriptionManagement() {
 
                   {/* 4. Plan and Amount */}
                   <div className="text-center lg:text-left">
-                    {payment.subscription && (
+                    {payment.subscription ? (
                       <>
                         <div className="flex items-center justify-center lg:justify-start mb-2">
                           <Crown className="h-4 w-4 text-gold-400 mr-2" />
@@ -303,13 +303,20 @@ export function SubscriptionManagement() {
                         <div className="flex items-center justify-center lg:justify-start">
                           <DollarSign className="h-3 w-3 text-green-400 mr-1" />
                           <p className="text-green-400 font-semibold">
-                            ${payment.amount}
+                            ${payment.amount > 0 ? payment.amount : payment.subscription.price}
                           </p>
                         </div>
                         <p className="text-gray-400 text-sm mt-1">
                           ({payment.subscription.planType === 'monthly' ? '1 месяц' : '3 месяца'})
                         </p>
                       </>
+                    ) : (
+                      <div className="flex items-center justify-center lg:justify-start">
+                        <DollarSign className="h-3 w-3 text-gray-400 mr-1" />
+                        <p className="text-gray-400 font-semibold">
+                          ${payment.amount > 0 ? payment.amount : 'N/A'}
+                        </p>
+                      </div>
                     )}
                   </div>
 
