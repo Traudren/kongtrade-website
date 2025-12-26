@@ -36,7 +36,7 @@ const monthlyPlans = [
   },
   {
     name: 'Premium',
-    price: 120,
+    price: 140,
     limit: 'unlimited',
     features: [
       'All features',
@@ -50,7 +50,7 @@ const monthlyPlans = [
 const quarterlyPlans = [
   { name: 'Basic', price: 135, originalPrice: 150 },
   { name: 'Professional', price: 215, originalPrice: 240, popular: true },
-  { name: 'Premium', price: 320, originalPrice: 360 }
+  { name: 'Premium', price: 380, originalPrice: 420 }
 ]
 
 export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) {
@@ -72,16 +72,12 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
       setTelegramChannelEnabled(false)
     }
     
-    // Calculate price with telegram channel if Premium (enabled by default)
+    // For Premium, telegram channel is always included in the price
     let finalPrice = basePrice
     let telegramChannel = false
     if (planName === 'Premium') {
-      // Telegram channel is enabled by default for Premium
-      if (planType === 'monthly') {
-        finalPrice = basePrice + 20 // 120 + 20 = 140
-      } else {
-        finalPrice = basePrice + 60 // 320 + 60 = 380
-      }
+      // Premium price already includes telegram channel (140 for monthly, 380 for quarterly)
+      finalPrice = basePrice
       telegramChannel = true
     }
     
@@ -118,25 +114,17 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
   }, [onPlanSelect])
 
   const updatePlanWithTelegram = useCallback((newValue: boolean) => {
-    // If Premium plan is selected, update the price
+    // If Premium plan is selected, telegram is always included, so price stays the same
     if (selectedPlan?.endsWith('-Premium')) {
       const planName = 'Premium'
-      const basePrice = planType === 'monthly' ? 120 : 320
-      let finalPrice = basePrice
-      if (newValue) {
-        if (planType === 'monthly') {
-          finalPrice = basePrice + 20
-        } else {
-          finalPrice = basePrice + 60
-        }
-      }
+      const finalPrice = planType === 'monthly' ? 140 : 380
       
       if (onPlanSelect) {
         onPlanSelect({
           name: planName,
           type: planType,
           price: finalPrice,
-          telegramChannel: newValue
+          telegramChannel: true // Always true for Premium
         })
       }
     }
@@ -232,22 +220,8 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
                     <p className="text-sm text-cyan-400">{plan.limit}</p>
                   </div>
                   <div className="text-right">
-                    {plan.name === 'Premium' && selectedPlan === `${planType}-${plan.name}` && telegramChannelEnabled ? (
-                      <>
-                        <div className="text-xl font-bold text-white">${plan.price + 20}</div>
-                        <div className="text-xs text-gray-400">/ month</div>
-                      </>
-                    ) : plan.name === 'Premium' && selectedPlan === `${planType}-${plan.name}` ? (
-                      <>
-                        <div className="text-xl font-bold text-white">${plan.price}</div>
-                        <div className="text-xs text-gray-400">/ month</div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-xl font-bold text-white">${plan.price}</div>
-                        <div className="text-xs text-gray-400">/ month</div>
-                      </>
-                    )}
+                    <div className="text-xl font-bold text-white">${plan.price}</div>
+                    <div className="text-xs text-gray-400">/ month</div>
                   </div>
                 </div>
 
@@ -260,41 +234,17 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
                   ))}
                 </div>
 
-                {/* Telegram channel toggle - только для Premium */}
+                {/* Telegram channel info - всегда включен для Premium */}
                 {plan.name === 'Premium' && selectedPlan === `${planType}-${plan.name}` && (
                   <div className="mt-4 pt-4 border-t border-white/10">
-                    <label 
-                      className="flex items-center justify-between cursor-pointer"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleTelegramChannelToggle(e)
-                      }}
-                    >
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center">
+                        <Check className="h-4 w-4 text-cyan-400 mr-2" />
                         <span className="text-xs text-gray-300">
-                          Telegram channel with orders and custom results
+                          Telegram channel with orders and custom results (included)
                         </span>
                       </div>
-                      <div className="relative">
-                        <input
-                          type="checkbox"
-                          checked={telegramChannelEnabled}
-                          onChange={(e) => {
-                            e.stopPropagation()
-                            handleTelegramChannelChange(e)
-                          }}
-                          className="sr-only"
-                        />
-                        <div className={`w-10 h-5 rounded-full transition-colors ${
-                          telegramChannelEnabled ? 'bg-cyan-500' : 'bg-gray-600'
-                        }`}>
-                          <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                            telegramChannelEnabled ? 'translate-x-5' : 'translate-x-0.5'
-                          } mt-0.5`}></div>
-                        </div>
-                      </div>
-                    </label>
+                    </div>
                   </div>
                 )}
 
@@ -334,75 +284,27 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-base font-semibold text-white">{plan.name}</h3>
-                    {plan.name === 'Premium' && selectedPlan === `${planType}-${plan.name}` && telegramChannelEnabled ? (
-                      <p className="text-sm text-green-400">
-                        Save ${420 - 380}
-                      </p>
-                    ) : plan.name === 'Premium' && selectedPlan === `${planType}-${plan.name}` ? (
-                      <p className="text-sm text-green-400">
-                        Save ${plan.originalPrice - plan.price}
-                      </p>
-                    ) : (
-                      <p className="text-sm text-green-400">
-                        Save ${plan.originalPrice - plan.price}
-                      </p>
-                    )}
+                    <p className="text-sm text-green-400">
+                      Save ${plan.originalPrice - plan.price}
+                    </p>
                   </div>
                   <div className="text-right">
-                    {plan.name === 'Premium' && selectedPlan === `${planType}-${plan.name}` && telegramChannelEnabled ? (
-                      <>
-                        <div className="text-xl font-bold text-white">$380</div>
-                        <div className="text-xs text-gray-400 line-through">$420</div>
-                      </>
-                    ) : plan.name === 'Premium' && selectedPlan === `${planType}-${plan.name}` ? (
-                      <>
-                        <div className="text-xl font-bold text-white">${plan.price}</div>
-                        <div className="text-xs text-gray-400 line-through">${plan.originalPrice}</div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-xl font-bold text-white">${plan.price}</div>
-                        <div className="text-xs text-gray-400 line-through">${plan.originalPrice}</div>
-                      </>
-                    )}
+                    <div className="text-xl font-bold text-white">${plan.price}</div>
+                    <div className="text-xs text-gray-400 line-through">${plan.originalPrice}</div>
                   </div>
                 </div>
 
-                {/* Telegram channel toggle - только для Premium */}
+                {/* Telegram channel info - всегда включен для Premium */}
                 {plan.name === 'Premium' && selectedPlan === `${planType}-${plan.name}` && (
                   <div className="mt-4 pt-4 border-t border-white/10">
-                    <label 
-                      className="flex items-center justify-between cursor-pointer"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleTelegramChannelToggle(e)
-                      }}
-                    >
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center">
+                        <Check className="h-4 w-4 text-cyan-400 mr-2" />
                         <span className="text-xs text-gray-300">
-                          Telegram channel with orders and custom results
+                          Telegram channel with orders and custom results (included)
                         </span>
                       </div>
-                      <div className="relative">
-                        <input
-                          type="checkbox"
-                          checked={telegramChannelEnabled}
-                          onChange={(e) => {
-                            e.stopPropagation()
-                            handleTelegramChannelChange(e)
-                          }}
-                          className="sr-only"
-                        />
-                        <div className={`w-10 h-5 rounded-full transition-colors ${
-                          telegramChannelEnabled ? 'bg-cyan-500' : 'bg-gray-600'
-                        }`}>
-                          <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                            telegramChannelEnabled ? 'translate-x-5' : 'translate-x-0.5'
-                          } mt-0.5`}></div>
-                        </div>
-                      </div>
-                    </label>
+                    </div>
                   </div>
                 )}
 
