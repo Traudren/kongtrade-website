@@ -77,7 +77,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="https://i.ytimg.com/vi/GoQVS20Jcko/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAQJtvi5v-w2pUrbAYR2cPkK3BxsA" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/png" href="/favicon.ico" />
       </head>
       <body className={`${inter.className} soft-tech-bg light-particles`}>
         <Providers>

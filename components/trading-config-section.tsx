@@ -158,9 +158,23 @@ export function TradingConfigSection() {
                   <SelectTrigger className="bg-white/10 border-white/20 text-white">
                     <SelectValue placeholder="Выберите биржу" />
                   </SelectTrigger>
-                  <SelectContent className="glass-effect border-white/20">
-                    <SelectItem value="binance" className="text-white">Binance</SelectItem>
-                    <SelectItem value="bybit" className="text-white">Bybit</SelectItem>
+                  <SelectContent className="glass-effect border-white/20" position="popper" sideOffset={4}>
+                    <SelectItem value="binance" className="text-white cursor-pointer">
+                      <div className="flex items-center">
+                        <div className="w-6 h-6 rounded-full bg-yellow-400 mr-2 flex items-center justify-center text-black font-bold text-xs">
+                          B
+                        </div>
+                        Binance
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="bybit" className="text-white cursor-pointer">
+                      <div className="flex items-center">
+                        <div className="w-6 h-6 rounded-full bg-blue-500 mr-2 flex items-center justify-center text-white font-bold text-xs">
+                          B
+                        </div>
+                        Bybit
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

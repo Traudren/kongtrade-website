@@ -24,8 +24,15 @@ export function Header() {
 
   const navigation = [
     { name: 'Features', href: '#features' },
-    { name: 'Resources', href: '#resources' },
     { name: 'Pricing', href: '#pricing' },
+  ]
+
+  const resourcesLinks = [
+    { name: 'Documentation', href: '#', icon: '📚' },
+    { name: 'FAQ', href: '#faq', icon: '❓' },
+    { name: 'Support', href: '#contact', icon: '💬' },
+    { name: 'Tutorials', href: '#', icon: '🎓' },
+    { name: 'API Guide', href: '#', icon: '🔧' },
   ]
 
   useEffect(() => {
@@ -79,6 +86,35 @@ export function Header() {
                   {item.name}
                 </Link>
               ))}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="text-gray-300 hover:text-white transition-colors duration-200 font-medium">
+                    Resources
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="glass-effect border-white/20 rounded-xl min-w-[200px]">
+                  {resourcesLinks.map((link) => (
+                    <DropdownMenuItem key={link.name} asChild>
+                      <Link
+                        href={link.href}
+                        className="text-white rounded-lg text-sm flex items-center cursor-pointer"
+                        onClick={(e) => {
+                          if (link.href.startsWith('#')) {
+                            e.preventDefault()
+                            const element = document.querySelector(link.href)
+                            if (element) {
+                              element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            }
+                          }
+                        }}
+                      >
+                        <span className="mr-2">{link.icon}</span>
+                        {link.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
 
             {/* Social Media Links */}
@@ -172,6 +208,31 @@ export function Header() {
                   {item.name}
                 </Link>
               ))}
+              <div className="px-3 py-2">
+                <p className="text-gray-300 font-medium mb-2 text-sm">Resources</p>
+                {resourcesLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="block px-3 py-2 text-gray-400 hover:text-white transition-colors rounded-lg text-sm"
+                    onClick={(e) => {
+                      setIsMobileMenuOpen(false)
+                      if (link.href.startsWith('#')) {
+                        e.preventDefault()
+                        setTimeout(() => {
+                          const element = document.querySelector(link.href)
+                          if (element) {
+                            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                          }
+                        }, 100)
+                      }
+                    }}
+                  >
+                    <span className="mr-2">{link.icon}</span>
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
               
               {/* Mobile Social Links */}
               <div className="flex items-center space-x-4 px-3 py-2 border-t border-white/10 pt-4">

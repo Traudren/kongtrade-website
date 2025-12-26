@@ -378,13 +378,13 @@ export function PaymentSection({ selectedPlan }: PaymentSectionProps) {
                 </div>
               </div>
 
-              {paymentMethod && (
+              {paymentMethod && selectedPlan?.price && (
                 <>
                   {/* Payment details */}
                   <div className="bg-gradient-to-r from-cyan-500/10 to-blue-600/10 rounded-xl p-6 mb-8 border border-cyan-500/20">
                     <div className="text-center mb-6">
                       <div className="text-3xl font-bold text-white mb-2">
-                        ${selectedAmount}
+                        ${selectedAmount > 0 ? selectedAmount : selectedPlan.price}
                       </div>
                       <p className="text-gray-300">Amount to pay</p>
                       <p className="text-sm text-cyan-400 capitalize">{paymentMethod} Wallet</p>
