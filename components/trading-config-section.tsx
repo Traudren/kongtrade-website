@@ -2,7 +2,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -173,7 +172,7 @@ export function TradingConfigSection() {
               {/* Exchange Selection */}
               <div className="space-y-2">
                 <Label htmlFor="exchange" className="text-white">Биржа *</Label>
-                <div className="relative" ref={exchangeDropdownRef}>
+                <div className="relative w-full" ref={exchangeDropdownRef}>
                   <button
                     type="button"
                     onClick={(e) => {
@@ -195,12 +194,12 @@ export function TradingConfigSection() {
                     <span className="block truncate flex items-center">
                       {exchange === 'binance' ? (
                         <>
-                          <Image src="/binance-logo.svg" alt="Binance" width={20} height={20} className="mr-2 flex-shrink-0" />
+                          <img src="/binance-logo.svg" alt="Binance" width={20} height={20} className="mr-2 flex-shrink-0" />
                           Binance
                         </>
                       ) : exchange === 'bybit' ? (
                         <>
-                          <Image src="/bybit-logo.svg" alt="Bybit" width={20} height={20} className="mr-2 flex-shrink-0" />
+                          <img src="/bybit-logo.svg" alt="Bybit" width={20} height={20} className="mr-2 flex-shrink-0" />
                           Bybit
                         </>
                       ) : (
@@ -211,8 +210,7 @@ export function TradingConfigSection() {
                   </button>
                   {exchangeDropdownOpen && (
                     <div
-                      className="absolute top-full left-0 right-0 z-[100] mt-1 w-full rounded-xl border border-white/20 bg-black/90 backdrop-blur-lg shadow-lg"
-                      style={{ position: 'absolute' }}
+                      className="absolute top-full left-0 w-full z-[100] mt-1 rounded-xl border border-white/20 bg-black/90 backdrop-blur-lg shadow-lg"
                       onMouseDown={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
@@ -233,7 +231,7 @@ export function TradingConfigSection() {
                           }}
                           className="w-full flex items-center px-3 py-2 text-sm text-white rounded-lg hover:bg-white/10 transition-colors"
                         >
-                          <Image src="/binance-logo.svg" alt="Binance" width={20} height={20} className="mr-2 flex-shrink-0" />
+                          <img src="/binance-logo.svg" alt="Binance" width={20} height={20} className="mr-2 flex-shrink-0" />
                           <span>Binance</span>
                         </button>
                         <button
@@ -246,7 +244,7 @@ export function TradingConfigSection() {
                           }}
                           className="w-full flex items-center px-3 py-2 text-sm text-white rounded-lg hover:bg-white/10 transition-colors"
                         >
-                          <Image src="/bybit-logo.svg" alt="Bybit" width={20} height={20} className="mr-2 flex-shrink-0" />
+                          <img src="/bybit-logo.svg" alt="Bybit" width={20} height={20} className="mr-2 flex-shrink-0" />
                           <span>Bybit</span>
                         </button>
                       </div>
