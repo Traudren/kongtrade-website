@@ -1,14 +1,13 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Bot, Play, Square, AlertCircle, CheckCircle, Zap, Settings, Save } from 'lucide-react'
+import { Bot, Play, Square, AlertCircle, CheckCircle, Zap, Settings, Save, ChevronDown } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface TradingConfig {
@@ -33,10 +32,29 @@ export function TradingConfigSection() {
   const [apiSecret, setApiSecret] = useState('')
   const [tgToken, setTgToken] = useState('')
   const [adminId, setAdminId] = useState('5351584188')
+  const [exchangeDropdownOpen, setExchangeDropdownOpen] = useState(false)
+  const exchangeDropdownRef = useRef<HTMLDivElement>(null)
+  const scrollPositionRef = useRef<number>(0)
 
   useEffect(() => {
     fetchConfigs()
   }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (exchangeDropdownRef.current && !exchangeDropdownRef.current.contains(e.target as Node)) {
+        setExchangeDropdownOpen(false)
+      }
+    }
+
+    if (exchangeDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [exchangeDropdownOpen])
 
   const fetchConfigs = async () => {
     try {
@@ -154,31 +172,97 @@ export function TradingConfigSection() {
               {/* Exchange Selection */}
               <div className="space-y-2">
                 <Label htmlFor="exchange" className="text-white">Биржа *</Label>
-                <Select value={exchange} onValueChange={setExchange}>
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                    <SelectValue placeholder="Выберите биржу" />
-                  </SelectTrigger>
-                  <SelectContent className="glass-effect border-white/20" position="popper" side="bottom" align="start" sideOffset={4}>
-                    <SelectItem value="binance" className="text-white cursor-pointer hover:bg-white/10">
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#F0B90B"/>
-                          <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#F0B90B"/>
-                        </svg>
-                        <span>Binance</span>
+                <div className="relative" ref={exchangeDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      scrollPositionRef.current = window.scrollY
+                      setExchangeDropdownOpen(!exchangeDropdownOpen)
+                      requestAnimationFrame(() => {
+                        window.scrollTo({ top: scrollPositionRef.current, behavior: 'instant' })
+                      })
+                    }}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      scrollPositionRef.current = window.scrollY
+                    }}
+                    className="flex h-10 w-full items-center justify-between rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white ring-offset-background focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2"
+                  >
+                    <span className="block truncate flex items-center">
+                      {exchange === 'binance' ? (
+                        <>
+                          <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#F0B90B"/>
+                            <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#F0B90B"/>
+                          </svg>
+                          Binance
+                        </>
+                      ) : exchange === 'bybit' ? (
+                        <>
+                          <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" fill="#F7A600"/>
+                            <path d="M12 6L8 10H12V14H16L12 18V6Z" fill="white"/>
+                          </svg>
+                          Bybit
+                        </>
+                      ) : (
+                        'Выберите биржу'
+                      )}
+                    </span>
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                  </button>
+                  {exchangeDropdownOpen && (
+                    <div
+                      className="absolute z-[100] mt-1 w-full rounded-xl border border-white/20 bg-black/90 backdrop-blur-lg shadow-lg"
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                      }}
+                    >
+                      <div className="p-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setExchange('binance')
+                            setExchangeDropdownOpen(false)
+                          }}
+                          className="w-full flex items-center px-3 py-2 text-sm text-white rounded-lg hover:bg-white/10 transition-colors"
+                        >
+                          <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#F0B90B"/>
+                            <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#F0B90B"/>
+                          </svg>
+                          <span>Binance</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setExchange('bybit')
+                            setExchangeDropdownOpen(false)
+                          }}
+                          className="w-full flex items-center px-3 py-2 text-sm text-white rounded-lg hover:bg-white/10 transition-colors"
+                        >
+                          <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" fill="#F7A600"/>
+                            <path d="M12 6L8 10H12V14H16L12 18V6Z" fill="white"/>
+                          </svg>
+                          <span>Bybit</span>
+                        </button>
                       </div>
-                    </SelectItem>
-                    <SelectItem value="bybit" className="text-white cursor-pointer hover:bg-white/10">
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="12" cy="12" r="10" fill="#F7A600"/>
-                          <path d="M12 6L8 10H12V14H16L12 18V6Z" fill="white"/>
-                        </svg>
-                        <span>Bybit</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Admin ID */}
