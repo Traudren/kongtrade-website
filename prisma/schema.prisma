@@ -1,0 +1,223 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String    @default("user") // user, admin
+  referralCode  String?   @unique // Уникальный реферальный код
+  referredBy    String?   // ID того, кто пригласил
+  totalEarnings Float     @default(0) // Общий заработок с рефералов
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  subscriptions Subscription[]
+  payments      Payment[]
+  configs       TradingConfig[]
+  
+  // Реферальные связи
+  referrer      User?     @relation("UserReferrals", fields: [referredBy], references: [id])
+  referrals     User[]    @relation("UserReferrals")
+  
+  // Реферальные бонусы
+  referralEarnings ReferralEarning[]
+  referralWithdrawals ReferralWithdrawal[]
+
+  @@index([referralCode])
+  @@index([referredBy])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Subscription {
+  id             String              @id @default(cuid())
+  userId         String
+  planName       String              // Basic, Professional, Premium
+  planType       String              // monthly, quarterly
+  price          Float
+  status         SubscriptionStatus  @default(PENDING)
+  startDate      DateTime?
+  endDate        DateTime?
+  autoRenew      Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments Payment[]
+  referralEarnings ReferralEarning[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  userId         String
+  subscriptionId String?
+  amount         Float
+  paymentMethod  String        // binance, bybit
+  walletAddress  String?
+  txid           String?
+  status         PaymentStatus @default(PENDING)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+model TradingConfig {
+  id           String   @id @default(cuid())
+  userId       String
+  exchange     String   // binance, bybit
+  apiKey       String?
+  apiSecret    String?
+  isActive     Boolean  @default(false)
+  botStatus    String   @default("not_launched") // not_launched, running, stopped, error
+  lastActivity DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, exchange])
+  @@index([userId])
+  @@index([botStatus])
+}
+
+model ContactForm {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  status    String   @default("new") // new, read, replied
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// Реферальные заработки
+model ReferralEarning {
+  id           String   @id @default(cuid())
+  userId       String   // Кто получил бонус
+  referralId   String   // Кто сделал покупку
+  subscriptionId String // За какую подписку
+  amount       Float    // Размер бонуса
+  percentage   Float    // Процент с покупки
+  status       ReferralEarningStatus @default(PENDING)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+// Выводы реферальных средств
+model ReferralWithdrawal {
+  id           String   @id @default(cuid())
+  userId       String
+  amount       Float
+  walletAddress String
+  status       WithdrawalStatus @default(PENDING)
+  processedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+// Реферальные настройки системы
+model ReferralSettings {
+  id                String   @id @default(cuid())
+  level1Percentage  Float    @default(0.10) // 10% с первого уровня
+  level2Percentage  Float    @default(0.05) // 5% со второго уровня
+  minWithdrawAmount Float    @default(10.0) // Минимальная сумма для вывода
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+enum ReferralEarningStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  REJECTED
+}

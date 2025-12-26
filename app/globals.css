@@ -1,0 +1,474 @@
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+/* PostCSS/Tailwind directives - these are valid and will be processed by PostCSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #0A1128;
+  --secondary: #001F54;
+  --accent: #00D4FF;
+  --background: linear-gradient(135deg, #0a0e27 0%, #1a1b3a 25%, #2d1b69 50%, #1e3a8a 75%, #0f172a 100%);
+  --radius: 1rem;
+}
+
+* {
+  box-sizing: border-box;
+  border-radius: inherit;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+  /* Оптимизация для предотвращения белого фона при скроллинге */
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1b3a 25%, #2d1b69 50%, #1e3a8a 75%, #0f172a 100%);
+  min-height: 100%;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+body {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Оптимизация производительности */
+.smooth-scroll {
+  scroll-behavior: smooth !important;
+}
+
+/* Предотвращение белого фона при быстром скроллинге */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Оптимизация рендеринга для всех секций */
+section, main, article {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  contain: layout style paint;
+}
+
+/* Оптимизация для плавных переходов */
+a, button, input, textarea, select {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  will-change: transform;
+}
+
+/* Оптимизация для изображений */
+img {
+  content-visibility: auto;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Оптимизация скроллинга */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Отключение анимаций для пользователей с prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Убираем лаги при прокрутке */
+button, a, [role="button"] {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+button:focus, a:focus, [role="button"]:focus {
+  outline: none;
+}
+
+/* Исправление квадратных фонов на мобильных устройствах */
+button, .btn, [role="button"] {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-clip: padding-box !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Убираем квадратные outline на круглых кнопках */
+button:focus, .btn:focus, [role="button"]:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Особая обработка для круглых кнопок */
+.rounded-full, .rounded-full button, button.rounded-full {
+  overflow: hidden !important;
+  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+  mask-image: radial-gradient(white, black) !important;
+}
+
+/* Отключаем системные стили на iOS */
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
+  button, .btn, [role="button"] {
+    border: none !important;
+    -webkit-border-radius: inherit !important;
+    border-radius: inherit !important;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1b3a 25%, #2d1b69 50%, #1e3a8a 75%, #0f172a 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  position: relative;
+  /* Оптимизация для предотвращения белого фона при скроллинге */
+  will-change: scroll-position;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 70% 30%, rgba(168, 85, 247, 0.1) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: -2;
+  /* Оптимизация для плавного рендеринга */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 10px 20px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(59, 130, 246, 0.5), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(139, 92, 246, 0.4), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(34, 211, 238, 0.4), transparent),
+    radial-gradient(1px 1px at 70px 110px, rgba(168, 85, 247, 0.3), transparent);
+  background-repeat: repeat;
+  background-size: 200px 100px;
+  animation: drift 20s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+  /* Оптимизация для плавной анимации */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced typography for desktop */
+@media (min-width: 768px) {
+  body {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  
+  h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  h3 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .text-lg {
+    font-size: 1.125rem;
+  }
+  
+  .text-xl {
+    font-size: 1.25rem;
+  }
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1b3a 25%, #2d1b69 50%, #1e3a8a 75%, #0f172a 100%);
+  /* Оптимизация для предотвращения белого фона */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Мягкий технологичный фон для всего сайта */
+.soft-tech-bg {
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1b3a 25%, #2d1b69 50%, #1e3a8a 75%, #0f172a 100%);
+  position: relative;
+  /* Оптимизация для предотвращения белого фона при скроллинге */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  min-height: 100vh;
+}
+
+.soft-tech-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(144, 238, 144, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(135, 206, 235, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+  /* Оптимизация для плавного рендеринга */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Световые частицы */
+.light-particles::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 10px 20px, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(0, 255, 255, 0.2), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(144, 238, 144, 0.3), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(135, 206, 235, 0.25), transparent);
+  background-repeat: repeat;
+  background-size: 200px 100px;
+  animation: drift 20s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+  /* Оптимизация для плавной анимации */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@keyframes drift {
+  from { 
+    transform: translate3d(0, 0, 0);
+  }
+  to { 
+    transform: translate3d(0, -100px, 0);
+  }
+}
+
+/* Оптимизация для уменьшения количества рефлоу и репинтов */
+.optimize-render {
+  contain: layout style paint;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.glass-effect {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(10, 17, 40, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  /* Оптимизация backdrop-filter для лучшей производительности */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+  transform: translateY(-2px) translateZ(0);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.animate-count {
+  display: inline-block;
+}
+
+/* Rounded corners for all elements */
+.rounded-corners * {
+  border-radius: 1rem !important;
+}
+
+button, .btn, input, textarea, select {
+  border-radius: 1rem !important;
+}
+
+.card, .panel, .modal {
+  border-radius: 1.5rem !important;
+}
+
+/* Chat button positioning */
+.chat-button {
+  right: 1.5rem !important;
+  bottom: 1.5rem !important;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* Световые эффекты для гармонии с градиентным текстом */
+.glow-light-cyan {
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.15), 0 0 60px rgba(34, 211, 238, 0.08);
+}
+
+.glow-light-blue {
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.15), 0 0 60px rgba(59, 130, 246, 0.08);
+}
+
+.section-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.hero-glow::after {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.card-glow {
+  position: relative;
+}
+
+.card-glow::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  background: linear-gradient(45deg, 
+    rgba(34, 211, 238, 0.05) 0%, 
+    rgba(59, 130, 246, 0.05) 50%, 
+    rgba(34, 211, 238, 0.05) 100%);
+  border-radius: 2rem;
+  z-index: -1;
+  filter: blur(20px);
+}
+
+.font-dm-sans {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Enhanced spacing for better visual hierarchy */
+.section-spacing {
+  padding: 5rem 0;
+}
+
+@media (min-width: 768px) {
+  .section-spacing {
+    padding: 6rem 0;
+  }
+}
+
+/* Better mobile responsive text sizes */
+@media (max-width: 767px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+  
+  h2 {
+    font-size: 2rem;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+  }
+  
+  p {
+    font-size: 0.9rem;
+  }
+}
