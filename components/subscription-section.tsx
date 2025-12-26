@@ -260,17 +260,41 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
                   ))}
                 </div>
 
-                {/* Telegram channel info - всегда включен для Premium */}
+                {/* Telegram channel toggle - только для Premium */}
                 {plan.name === 'Premium' && selectedPlan === `${planType}-${plan.name}` && (
                   <div className="mt-4 pt-4 border-t border-white/10">
-                    <div className="flex items-center justify-between">
+                    <label 
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleTelegramChannelToggle(e)
+                      }}
+                    >
                       <div className="flex items-center">
-                        <Check className="h-4 w-4 text-cyan-400 mr-2" />
                         <span className="text-xs text-gray-300">
-                          Telegram channel with orders and custom results (included)
+                          Telegram channel with orders and custom results
                         </span>
                       </div>
-                    </div>
+                      <div className="relative">
+                        <input
+                          type="checkbox"
+                          checked={telegramChannelEnabled}
+                          onChange={(e) => {
+                            e.stopPropagation()
+                            handleTelegramChannelChange(e)
+                          }}
+                          className="sr-only"
+                        />
+                        <div className={`w-10 h-5 rounded-full transition-colors ${
+                          telegramChannelEnabled ? 'bg-cyan-500' : 'bg-gray-600'
+                        }`}>
+                          <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                            telegramChannelEnabled ? 'translate-x-5' : 'translate-x-0.5'
+                          } mt-0.5`}></div>
+                        </div>
+                      </div>
+                    </label>
                   </div>
                 )}
 
