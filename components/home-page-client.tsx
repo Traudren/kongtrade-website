@@ -55,7 +55,12 @@ export function HomePageClient() {
   }, [showSplash])
 
   const handlePlanSelect = useCallback((plan: { name: string; type: string; price: number; telegramChannel?: boolean }) => {
-    setSelectedPlan(plan)
+    // Only set plan if price is greater than 0
+    if (plan.price > 0) {
+      setSelectedPlan(plan)
+    } else {
+      setSelectedPlan({ name: '', type: 'monthly', price: 0 })
+    }
   }, [])
 
   return (
@@ -72,7 +77,7 @@ export function HomePageClient() {
               <SubscriptionSection onPlanSelect={handlePlanSelect} />
             </div>
             <div id="payment">
-              <PaymentSection selectedPlan={selectedPlan} />
+              <PaymentSection selectedPlan={selectedPlan.price > 0 ? selectedPlan : undefined} />
             </div>
             <Suspense fallback={<div className="min-h-[400px]" />}>
             <FAQSection />

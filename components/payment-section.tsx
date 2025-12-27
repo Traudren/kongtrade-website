@@ -71,6 +71,8 @@ export function PaymentSection({ selectedPlan }: PaymentSectionProps) {
   useEffect(() => {
     if (selectedPlan?.price) {
       setSelectedAmount(selectedPlan.price)
+    } else {
+      setSelectedAmount(0)
     }
   }, [selectedPlan])
 

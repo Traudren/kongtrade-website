@@ -34,7 +34,6 @@ export function TradingConfigSection() {
   const [adminId, setAdminId] = useState('5351584188')
   const [exchangeDropdownOpen, setExchangeDropdownOpen] = useState(false)
   const exchangeDropdownRef = useRef<HTMLDivElement>(null)
-  const scrollPositionRef = useRef<number>(0)
 
   useEffect(() => {
     fetchConfigs()
@@ -178,16 +177,7 @@ export function TradingConfigSection() {
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      scrollPositionRef.current = window.scrollY
                       setExchangeDropdownOpen(!exchangeDropdownOpen)
-                      requestAnimationFrame(() => {
-                        window.scrollTo({ top: scrollPositionRef.current, behavior: 'instant' })
-                      })
-                    }}
-                    onMouseDown={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      scrollPositionRef.current = window.scrollY
                     }}
                     className="flex h-10 w-full items-center justify-between rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white ring-offset-background focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2"
                   >
@@ -217,7 +207,7 @@ export function TradingConfigSection() {
                   {exchangeDropdownOpen && (
                     <div
                       className="absolute top-full left-0 w-full z-[100] mt-1 rounded-xl border border-white/20 bg-black/90 backdrop-blur-lg shadow-lg"
-                      style={{ position: 'absolute', top: '100%', left: 0, right: 0 }}
+                      style={{ position: 'absolute', top: '100%', left: 0, width: '100%' }}
                       onMouseDown={(e) => {
                         e.preventDefault()
                         e.stopPropagation()

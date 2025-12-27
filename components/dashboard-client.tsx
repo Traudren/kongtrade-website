@@ -441,11 +441,16 @@ export function DashboardClient() {
                       <p className="text-gray-300 text-sm mb-3">
                         Watch this tutorial to learn how to get your API keys and Telegram credentials:
                       </p>
-                      <div className="bg-black/30 rounded-lg p-4 text-center">
-                        <p className="text-gray-400 mb-2">📹 Video Tutorial</p>
-                        <p className="text-xs text-gray-500">
-                          Video will be available soon. Please contact support for assistance.
-                        </p>
+                      <div className="bg-black/30 rounded-lg overflow-hidden aspect-video">
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src="https://www.youtube.com/embed/BCSwSqgH4A0"
+                          title="KongTrade Video Tutorial"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          className="w-full h-full"
+                        />
                       </div>
                     </div>
                   </div>
