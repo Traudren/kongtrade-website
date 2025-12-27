@@ -172,7 +172,7 @@ export function TradingConfigSection() {
               {/* Exchange Selection */}
               <div className="space-y-2">
                 <Label htmlFor="exchange" className="text-white">Биржа *</Label>
-                <div className="relative w-full" ref={exchangeDropdownRef}>
+                <div className="relative w-full" ref={exchangeDropdownRef} style={{ position: 'relative' }}>
                   <button
                     type="button"
                     onClick={(e) => {
@@ -194,12 +194,18 @@ export function TradingConfigSection() {
                     <span className="block truncate flex items-center">
                       {exchange === 'binance' ? (
                         <>
-                          <img src="/binance-logo.svg" alt="Binance" width={20} height={20} className="mr-2 flex-shrink-0" />
+                          <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#F0B90B"/>
+                            <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#F0B90B"/>
+                          </svg>
                           Binance
                         </>
                       ) : exchange === 'bybit' ? (
                         <>
-                          <img src="/bybit-logo.svg" alt="Bybit" width={20} height={20} className="mr-2 flex-shrink-0" />
+                          <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" fill="#F7A600"/>
+                            <path d="M12 6L8 10H12V14H16L12 18V6Z" fill="white"/>
+                          </svg>
                           Bybit
                         </>
                       ) : (
@@ -211,6 +217,7 @@ export function TradingConfigSection() {
                   {exchangeDropdownOpen && (
                     <div
                       className="absolute top-full left-0 w-full z-[100] mt-1 rounded-xl border border-white/20 bg-black/90 backdrop-blur-lg shadow-lg"
+                      style={{ position: 'absolute', top: '100%', left: 0, right: 0 }}
                       onMouseDown={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
@@ -231,7 +238,10 @@ export function TradingConfigSection() {
                           }}
                           className="w-full flex items-center px-3 py-2 text-sm text-white rounded-lg hover:bg-white/10 transition-colors"
                         >
-                          <img src="/binance-logo.svg" alt="Binance" width={20} height={20} className="mr-2 flex-shrink-0" />
+                          <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#F0B90B"/>
+                            <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#F0B90B"/>
+                          </svg>
                           <span>Binance</span>
                         </button>
                         <button
@@ -244,7 +254,10 @@ export function TradingConfigSection() {
                           }}
                           className="w-full flex items-center px-3 py-2 text-sm text-white rounded-lg hover:bg-white/10 transition-colors"
                         >
-                          <img src="/bybit-logo.svg" alt="Bybit" width={20} height={20} className="mr-2 flex-shrink-0" />
+                          <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" fill="#F7A600"/>
+                            <path d="M12 6L8 10H12V14H16L12 18V6Z" fill="white"/>
+                          </svg>
                           <span>Bybit</span>
                         </button>
                       </div>
