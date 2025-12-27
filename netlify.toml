@@ -7,7 +7,6 @@
   NODE_VERSION = "18"
   NPM_FLAGS = "--legacy-peer-deps"
 
-# Временно отключен плагин, так как требует NETLIFY_AUTH_TOKEN
-# Для включения добавьте NETLIFY_AUTH_TOKEN в переменные окружения Netlify
-# [[plugins]]
-#   package = "@netlify/plugin-nextjs"
+# Плагин отключен - требуется NETLIFY_AUTH_TOKEN или отключение в UI
+# Чтобы отключить плагин в UI: Site settings → Build & deploy → Plugins → удалите @netlify/plugin-nextjs
+# Или добавьте NETLIFY_AUTH_TOKEN в Environment variables

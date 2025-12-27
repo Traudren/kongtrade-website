@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
-  output: process.env.NEXT_OUTPUT_MODE || 'standalone',
+  output: process.env.NEXT_OUTPUT_MODE || undefined,
   experimental: {
     optimizeCss: true,
   },
