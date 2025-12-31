@@ -137,7 +137,14 @@ export function Header() {
                         onSelect={(e) => {
                           if (link.anchor) {
                             e.preventDefault()
-                            handleAnchorClick()
+                            // Small delay to ensure dropdown closes before scrolling
+                            setTimeout(() => handleAnchorClick(), 50)
+                          }
+                        }}
+                        onPointerDown={(e) => {
+                          if (link.anchor) {
+                            e.preventDefault()
+                            e.stopPropagation()
                           }
                         }}
                         onClick={(e) => {
