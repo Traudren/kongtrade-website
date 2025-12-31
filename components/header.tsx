@@ -102,25 +102,27 @@ export function Header() {
                           const isHomePage = window.location.pathname === '/'
                           if (isHomePage) {
                             // Scroll to element on current page
-                            setTimeout(() => {
-                              const element = document.querySelector(link.href)
-                              if (element) {
-                                const headerOffset = 80 // Account for fixed header
-                                const elementPosition = element.getBoundingClientRect().top
-                                const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-                                window.scrollTo({
-                                  top: offsetPosition,
-                                  behavior: 'smooth'
-                                })
-                              }
-                            }, 100)
+                            requestAnimationFrame(() => {
+                              setTimeout(() => {
+                                const element = document.querySelector(link.href)
+                                if (element) {
+                                  const headerOffset = 80 // Account for fixed header
+                                  const elementPosition = element.getBoundingClientRect().top
+                                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+                                  window.scrollTo({
+                                    top: offsetPosition,
+                                    behavior: 'smooth'
+                                  })
+                                }
+                              }, 200)
+                            })
                           } else {
                             // Navigate to home page with hash
                             window.location.href = `/${link.href}`
                           }
                         }
                       }}
-                      className="text-white rounded-lg text-sm flex items-center cursor-pointer"
+                      className="text-white rounded-lg text-sm flex items-center cursor-pointer focus:bg-white/10"
                     >
                       {link.external ? (
                         <a
