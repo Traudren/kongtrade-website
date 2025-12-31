@@ -92,52 +92,55 @@ export function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="glass-effect border-white/20 rounded-xl min-w-[200px]">
                   {resourcesLinks.map((link) => (
-                    <DropdownMenuItem key={link.name} asChild>
+                    <DropdownMenuItem 
+                      key={link.name} 
+                      asChild={link.external}
+                      onSelect={(e) => {
+                        if (link.anchor) {
+                          e.preventDefault()
+                          // Check if we're on the home page
+                          const isHomePage = window.location.pathname === '/'
+                          if (isHomePage) {
+                            // Scroll to element on current page
+                            setTimeout(() => {
+                              const element = document.querySelector(link.href)
+                              if (element) {
+                                const headerOffset = 80 // Account for fixed header
+                                const elementPosition = element.getBoundingClientRect().top
+                                const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+                                window.scrollTo({
+                                  top: offsetPosition,
+                                  behavior: 'smooth'
+                                })
+                              }
+                            }, 100)
+                          } else {
+                            // Navigate to home page with hash
+                            window.location.href = `/${link.href}`
+                          }
+                        }
+                      }}
+                      className="text-white rounded-lg text-sm flex items-center cursor-pointer"
+                    >
                       {link.external ? (
                         <a
                           href={link.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-white rounded-lg text-sm flex items-center cursor-pointer"
+                          className="flex items-center w-full"
                         >
                           <span className="mr-2">{link.icon}</span>
                           {link.name}
                         </a>
                       ) : link.anchor ? (
-                        <a
-                          href={link.href}
-                          className="text-white rounded-lg text-sm flex items-center cursor-pointer"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            // Check if we're on the home page
-                            const isHomePage = window.location.pathname === '/'
-                            if (isHomePage) {
-                              // Scroll to element on current page
-                              setTimeout(() => {
-                                const element = document.querySelector(link.href)
-                                if (element) {
-                                  const headerOffset = 80 // Account for fixed header
-                                  const elementPosition = element.getBoundingClientRect().top
-                                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-                                  window.scrollTo({
-                                    top: offsetPosition,
-                                    behavior: 'smooth'
-                                  })
-                                }
-                              }, 100)
-                            } else {
-                              // Navigate to home page with hash
-                              window.location.href = `/${link.href}`
-                            }
-                          }}
-                        >
+                        <div className="flex items-center w-full">
                           <span className="mr-2">{link.icon}</span>
                           {link.name}
-                        </a>
+                        </div>
                       ) : (
                         <Link
                           href={link.href}
-                          className="text-white rounded-lg text-sm flex items-center cursor-pointer"
+                          className="flex items-center w-full"
                         >
                           <span className="mr-2">{link.icon}</span>
                           {link.name}
