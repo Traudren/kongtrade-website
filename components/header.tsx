@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { Menu, X, LogOut, User, Settings, Youtube, Send } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -21,6 +22,7 @@ export function Header() {
   const [mounted, setMounted] = useState(false)
   const { data: session, status } = useSession()
   const { t } = useTranslation()
+  const router = useRouter()
 
   const navigation = [
     { name: 'Features', href: '#features' },
@@ -91,65 +93,81 @@ export function Header() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="glass-effect border-white/20 rounded-xl min-w-[200px]">
-                  {resourcesLinks.map((link) => (
-                    <DropdownMenuItem 
-                      key={link.name} 
-                      asChild={link.external}
-                      onSelect={(e) => {
-                        if (link.anchor) {
-                          e.preventDefault()
-                          // Check if we're on the home page
-                          const isHomePage = window.location.pathname === '/'
-                          if (isHomePage) {
-                            // Scroll to element on current page
-                            requestAnimationFrame(() => {
-                              setTimeout(() => {
-                                const element = document.querySelector(link.href)
-                                if (element) {
-                                  const headerOffset = 80 // Account for fixed header
-                                  const elementPosition = element.getBoundingClientRect().top
-                                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-                                  window.scrollTo({
-                                    top: offsetPosition,
-                                    behavior: 'smooth'
-                                  })
-                                }
-                              }, 200)
-                            })
-                          } else {
-                            // Navigate to home page with hash
-                            window.location.href = `/${link.href}`
+                  {resourcesLinks.map((link) => {
+                    const handleAnchorClick = () => {
+                      // Check if we're on the home page
+                      const isHomePage = window.location.pathname === '/'
+                      if (isHomePage) {
+                        // Scroll to element on current page
+                        // Use double requestAnimationFrame to ensure DOM is ready
+                        requestAnimationFrame(() => {
+                          requestAnimationFrame(() => {
+                            const element = document.querySelector(link.href)
+                            if (element) {
+                              const headerOffset = 80 // Account for fixed header
+                              const elementPosition = element.getBoundingClientRect().top
+                              const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+                              window.scrollTo({
+                                top: offsetPosition,
+                                behavior: 'smooth'
+                              })
+                            } else {
+                              console.warn(`Element not found: ${link.href}`)
+                            }
+                          })
+                        })
+                      } else {
+                        // Navigate to home page with hash
+                        router.push(link.href)
+                      }
+                    }
+
+                    return (
+                      <DropdownMenuItem 
+                        key={link.name} 
+                        asChild={link.external}
+                        onSelect={(e) => {
+                          if (link.anchor) {
+                            e.preventDefault()
+                            handleAnchorClick()
                           }
-                        }
-                      }}
-                      className="text-white rounded-lg text-sm flex items-center cursor-pointer focus:bg-white/10"
-                    >
-                      {link.external ? (
-                        <a
-                          href={link.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center w-full"
-                        >
-                          <span className="mr-2">{link.icon}</span>
-                          {link.name}
-                        </a>
-                      ) : link.anchor ? (
-                        <div className="flex items-center w-full">
-                          <span className="mr-2">{link.icon}</span>
-                          {link.name}
-                        </div>
-                      ) : (
-                        <Link
-                          href={link.href}
-                          className="flex items-center w-full"
-                        >
-                          <span className="mr-2">{link.icon}</span>
-                          {link.name}
-                        </Link>
-                      )}
-                    </DropdownMenuItem>
-                  ))}
+                        }}
+                        onClick={(e) => {
+                          if (link.anchor) {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleAnchorClick()
+                          }
+                        }}
+                        className="text-white rounded-lg text-sm flex items-center cursor-pointer focus:bg-white/10"
+                      >
+                        {link.external ? (
+                          <a
+                            href={link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center w-full"
+                          >
+                            <span className="mr-2">{link.icon}</span>
+                            {link.name}
+                          </a>
+                        ) : link.anchor ? (
+                          <div className="flex items-center w-full">
+                            <span className="mr-2">{link.icon}</span>
+                            {link.name}
+                          </div>
+                        ) : (
+                          <Link
+                            href={link.href}
+                            className="flex items-center w-full"
+                          >
+                            <span className="mr-2">{link.icon}</span>
+                            {link.name}
+                          </Link>
+                        )}
+                      </DropdownMenuItem>
+                    )
+                  })}
                 </DropdownMenuContent>
               </DropdownMenu>
             </nav>
