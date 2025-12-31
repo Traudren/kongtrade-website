@@ -99,21 +99,29 @@ export function Header() {
                       const isHomePage = window.location.pathname === '/'
                       if (isHomePage) {
                         // Scroll to element on current page
-                        // Use double requestAnimationFrame to ensure DOM is ready
+                        // Since FAQ and Footer are lazy loaded, we need to wait for them
+                        const scrollToElement = (attempts = 0) => {
+                          const element = document.querySelector(link.href)
+                          if (element) {
+                            const headerOffset = 80 // Account for fixed header
+                            const elementPosition = element.getBoundingClientRect().top
+                            const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+                            window.scrollTo({
+                              top: offsetPosition,
+                              behavior: 'smooth'
+                            })
+                          } else if (attempts < 10) {
+                            // Retry up to 10 times (waiting for lazy loaded components)
+                            setTimeout(() => scrollToElement(attempts + 1), 100)
+                          } else {
+                            console.warn(`Element not found after retries: ${link.href}`)
+                          }
+                        }
+                        
+                        // Start scrolling after a short delay to ensure lazy components are loaded
                         requestAnimationFrame(() => {
                           requestAnimationFrame(() => {
-                            const element = document.querySelector(link.href)
-                            if (element) {
-                              const headerOffset = 80 // Account for fixed header
-                              const elementPosition = element.getBoundingClientRect().top
-                              const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-                              window.scrollTo({
-                                top: offsetPosition,
-                                behavior: 'smooth'
-                              })
-                            } else {
-                              console.warn(`Element not found: ${link.href}`)
-                            }
+                            scrollToElement()
                           })
                         })
                       } else {
