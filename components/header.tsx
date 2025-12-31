@@ -28,11 +28,9 @@ export function Header() {
   ]
 
   const resourcesLinks = [
-    { name: 'Documentation', href: 'https://docs.kongtrade.com', icon: '📚', external: true },
-    { name: 'FAQ', href: '#faq', icon: '❓', external: false },
-    { name: 'Support', href: '#contact', icon: '💬', external: false },
-    { name: 'Tutorials', href: 'https://youtube.com/channel/UCbiTXrgXZJzdfJAwjnxIXhg', icon: '🎓', external: true },
-    { name: 'API Guide', href: '/dashboard', icon: '🔧', external: false },
+    { name: 'FAQ', href: '#faq', icon: '❓', external: false, anchor: true },
+    { name: 'Support', href: '#contact', icon: '💬', external: false, anchor: true },
+    { name: 'API Guide', href: 'https://youtu.be/BCSwSqgH4A0', icon: '🔧', external: true },
   ]
 
   useEffect(() => {
@@ -105,21 +103,41 @@ export function Header() {
                           <span className="mr-2">{link.icon}</span>
                           {link.name}
                         </a>
+                      ) : link.anchor ? (
+                        <a
+                          href={link.href}
+                          className="text-white rounded-lg text-sm flex items-center cursor-pointer"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            // Check if we're on the home page
+                            const isHomePage = window.location.pathname === '/'
+                            if (isHomePage) {
+                              // Scroll to element on current page
+                              setTimeout(() => {
+                                const element = document.querySelector(link.href)
+                                if (element) {
+                                  const headerOffset = 80 // Account for fixed header
+                                  const elementPosition = element.getBoundingClientRect().top
+                                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+                                  window.scrollTo({
+                                    top: offsetPosition,
+                                    behavior: 'smooth'
+                                  })
+                                }
+                              }, 100)
+                            } else {
+                              // Navigate to home page with hash
+                              window.location.href = `/${link.href}`
+                            }
+                          }}
+                        >
+                          <span className="mr-2">{link.icon}</span>
+                          {link.name}
+                        </a>
                       ) : (
                         <Link
                           href={link.href}
                           className="text-white rounded-lg text-sm flex items-center cursor-pointer"
-                          onClick={(e) => {
-                            if (link.href.startsWith('#')) {
-                              e.preventDefault()
-                              setTimeout(() => {
-                                const element = document.querySelector(link.href)
-                                if (element) {
-                                  element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                                }
-                              }, 100)
-                            }
-                          }}
                         >
                           <span className="mr-2">{link.icon}</span>
                           {link.name}
@@ -237,23 +255,45 @@ export function Header() {
                       <span className="mr-2">{link.icon}</span>
                       {link.name}
                     </a>
+                  ) : link.anchor ? (
+                    <a
+                      key={link.name}
+                      href={link.href}
+                      className="block px-3 py-2 text-gray-400 hover:text-white transition-colors rounded-lg text-sm"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIsMobileMenuOpen(false)
+                        // Check if we're on the home page
+                        const isHomePage = window.location.pathname === '/'
+                        if (isHomePage) {
+                          // Scroll to element on current page
+                          setTimeout(() => {
+                            const element = document.querySelector(link.href)
+                            if (element) {
+                              const headerOffset = 80 // Account for fixed header
+                              const elementPosition = element.getBoundingClientRect().top
+                              const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+                              window.scrollTo({
+                                top: offsetPosition,
+                                behavior: 'smooth'
+                              })
+                            }
+                          }, 100)
+                        } else {
+                          // Navigate to home page with hash
+                          window.location.href = `/${link.href}`
+                        }
+                      }}
+                    >
+                      <span className="mr-2">{link.icon}</span>
+                      {link.name}
+                    </a>
                   ) : (
                     <Link
                       key={link.name}
                       href={link.href}
                       className="block px-3 py-2 text-gray-400 hover:text-white transition-colors rounded-lg text-sm"
-                      onClick={(e) => {
-                        setIsMobileMenuOpen(false)
-                        if (link.href.startsWith('#')) {
-                          e.preventDefault()
-                          setTimeout(() => {
-                            const element = document.querySelector(link.href)
-                            if (element) {
-                              element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                            }
-                          }, 100)
-                        }
-                      }}
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <span className="mr-2">{link.icon}</span>
                       {link.name}
