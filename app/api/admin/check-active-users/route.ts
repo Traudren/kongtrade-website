@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Форматируем для удобного просмотра
-    const formattedUsers = activeUsers.map(config => ({
+    const formattedUsers = activeUsers.map((config: any) => ({
       userId: config.userId,
       userName: config.user?.name || config.user?.email || 'Unknown',
       userEmail: config.user?.email,
