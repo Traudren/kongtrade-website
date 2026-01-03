@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Обновляем профит и статистику
-    const newProfitPercent = (config.currentProfitPercent || 0) + profitPercent
+    const newProfitPercent = ((config as any).currentProfitPercent || 0) + profitPercent
     const isProfitable = profitPercent > 0
     const isLosing = profitPercent < 0
 
