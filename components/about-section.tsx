@@ -41,9 +41,9 @@ const features = [
 
 export function AboutSection() {
   return (
-    <section id="features" className="py-16 px-4">
+    <section id="features" className="py-12 sm:py-16 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           {/* Left content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -51,20 +51,20 @@ export function AboutSection() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-4 sm:mb-6 text-center lg:text-left">
               Why Choose
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 text-glow">
                 KongTrade?
               </span>
             </h2>
             
-            <p className="text-lg text-gray-300 mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg text-gray-300 mb-6 sm:mb-8 leading-relaxed text-center lg:text-left">
               KongTrade combines the power of King Kong with cutting-edge trading technology. 
               Our AI-powered bot dominates the crypto markets with precision and strength, 
               just like the legendary gorilla himself.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {features.map((feature, index) => (
                 <motion.div
                   key={feature.title}

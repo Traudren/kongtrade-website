@@ -167,18 +167,18 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
       viewport={{ once: true }}
       className="flex-1"
     >
-      <div className="glass-effect rounded-2xl p-6 card-glow glow-light-cyan">
-        <h2 className="text-xl md:text-2xl font-bold text-white text-center mb-6">
+      <div className="glass-effect rounded-2xl p-4 sm:p-6 card-glow glow-light-cyan">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white text-center mb-4 sm:mb-6">
           Choose Your Plan
         </h2>
 
         {/* Plan type toggle */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4 sm:mb-6">
           <div className="bg-white/10 rounded-xl p-1">
             <button
               type="button"
               onClick={(e) => handlePlanTypeChange(e, 'monthly')}
-              className={`px-5 py-2 rounded-xl transition-all text-sm ${
+              className={`px-4 sm:px-5 py-2 rounded-xl transition-all text-xs sm:text-sm ${
                 planType === 'monthly'
                   ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white'
                   : 'text-gray-300 hover:text-white'
@@ -189,7 +189,7 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
             <button
               type="button"
               onClick={(e) => handlePlanTypeChange(e, 'quarterly')}
-              className={`px-5 py-2 rounded-xl transition-all text-sm ${
+              className={`px-4 sm:px-5 py-2 rounded-xl transition-all text-xs sm:text-sm ${
                 planType === 'quarterly'
                   ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white'
                   : 'text-gray-300 hover:text-white'
@@ -201,7 +201,7 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
         </div>
 
         {/* Plans */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {planType === 'monthly' ? (
             monthlyPlans.map((plan, index) => (
               <motion.div

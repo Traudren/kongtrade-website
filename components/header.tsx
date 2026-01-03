@@ -55,8 +55,8 @@ export function Header() {
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isScrolled ? 'glass-effect shadow-lg' : 'bg-transparent'
     }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
@@ -65,9 +65,9 @@ export function Header() {
                 alt="KongTrade"
                 width={60}
                 height={60}
-                className="h-14 w-14 rounded-lg"
+                className="h-10 w-10 sm:h-14 sm:w-14 rounded-lg"
               />
-              <span className="ml-3 text-xl font-bold">
+              <span className="ml-2 sm:ml-3 text-base sm:text-xl font-bold">
                 <span className="text-white">Kong</span>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">Trade</span>
               </span>
@@ -187,8 +187,8 @@ export function Header() {
               </DropdownMenu>
             </nav>
 
-            {/* Social Media Links */}
-            <div className="flex items-center space-x-3 border-l border-white/20 pl-4">
+            {/* Social Media Links - скрываем на мобильных */}
+            <div className="hidden lg:flex items-center space-x-3 border-l border-white/20 pl-4">
               <Link href="https://x.com/KongTrade_bot" target="_blank" className="text-gray-300 hover:text-cyan-400 transition-colors" title="X (Twitter)">
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>

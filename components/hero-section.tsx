@@ -10,9 +10,9 @@ import Link from 'next/link'
 
 export function HeroSection() {
   return (
-    <section className="relative pt-20 pb-16 px-4 overflow-hidden hero-glow">
+    <section className="relative pt-16 sm:pt-20 pb-12 sm:pb-16 px-4 sm:px-6 overflow-hidden hero-glow">
       <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
           {/* Left content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -20,19 +20,19 @@ export function HeroSection() {
             transition={{ duration: 0.6 }}
             className="text-center lg:text-left"
           >
-            <h1 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight">
               Automated
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 text-glow">
                 Crypto Trading
               </span>
             </h1>
             
-            <p className="text-lg text-gray-300 mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg text-gray-300 mb-6 sm:mb-8 leading-relaxed px-2 sm:px-0">
               KongTrade is a powerful automated cryptocurrency trading bot. 
               Helps traders automate trading processes, minimize risks, and maximize efficiency.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-12">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-12 px-2 sm:px-0">
                 <Button
                   size="lg"
                   className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-6 py-3 text-base hover-glow"

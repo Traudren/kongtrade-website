@@ -226,16 +226,16 @@ export function PaymentSection({ selectedPlan }: PaymentSectionProps) {
   }
 
   return (
-    <section id="payment" className="py-16 px-4">
+    <section id="payment" className="py-12 sm:py-16 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="glass-effect rounded-2xl p-8 card-glow glow-light-cyan"
+          className="glass-effect rounded-2xl p-4 sm:p-6 lg:p-8 card-glow glow-light-cyan"
         >
-          <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center mb-6 sm:mb-8">
             Payment
           </h2>
 
@@ -270,15 +270,15 @@ export function PaymentSection({ selectedPlan }: PaymentSectionProps) {
           {selectedPlan?.price && (
             <div className={hasPendingPayment ? 'opacity-50 pointer-events-none' : ''}>
           <div className="mb-8">
-            <Label className="text-white mb-4 block text-lg">
+            <Label className="text-white mb-4 block text-base sm:text-lg">
                   Selected Plan Amount:
             </Label>
-              <div className="p-4 rounded-lg border border-cyan-400 bg-cyan-400/10">
+              <div className="p-3 sm:p-4 rounded-lg border border-cyan-400 bg-cyan-400/10">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-white mb-2">
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-2">
                     ${selectedPlan.price}
                   </div>
-                  <p className="text-cyan-400">
+                  <p className="text-sm sm:text-base text-cyan-400">
                     {selectedPlan.name} Plan ({selectedPlan.type})
                       {selectedPlan.telegramChannel && (
                         <span className="block mt-1 text-xs">
@@ -301,7 +301,7 @@ export function PaymentSection({ selectedPlan }: PaymentSectionProps) {
             >
               {/* Payment method selection */}
               <div className="mb-8">
-                <Label className="text-white mb-4 block text-lg">{t('selectPaymentMethod')}</Label>
+                <Label className="text-white mb-4 block text-base sm:text-lg">{t('selectPaymentMethod')}</Label>
                 <div className="relative" ref={dropdownRef}>
                   <button
                     type="button"
@@ -383,13 +383,13 @@ export function PaymentSection({ selectedPlan }: PaymentSectionProps) {
               {paymentMethod && selectedPlan?.price && (
                 <>
                   {/* Payment details */}
-                  <div className="bg-gradient-to-r from-cyan-500/10 to-blue-600/10 rounded-xl p-6 mb-8 border border-cyan-500/20">
-                    <div className="text-center mb-6">
-                      <div className="text-3xl font-bold text-white mb-2">
+                  <div className="bg-gradient-to-r from-cyan-500/10 to-blue-600/10 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 border border-cyan-500/20">
+                    <div className="text-center mb-4 sm:mb-6">
+                      <div className="text-2xl sm:text-3xl font-bold text-white mb-2">
                         ${selectedAmount > 0 ? selectedAmount : selectedPlan.price}
                       </div>
-                      <p className="text-gray-300">Amount to pay</p>
-                      <p className="text-sm text-cyan-400 capitalize">{paymentMethod} Wallet</p>
+                      <p className="text-sm sm:text-base text-gray-300">Amount to pay</p>
+                      <p className="text-xs sm:text-sm text-cyan-400 capitalize">{paymentMethod} Wallet</p>
                     </div>
 
                     {/* Wallet address */}
