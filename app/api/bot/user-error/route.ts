@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Обновляем счетчик ошибок и последнюю ошибку
-    const newErrorCount = (config.errorCount || 0) + 1
+    const newErrorCount = ((config as any).errorCount || 0) + 1
     const shouldDeactivate = newErrorCount >= 3 // Деактивируем после 3 ошибок
 
     await prisma.tradingConfig.update({
