@@ -251,11 +251,11 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
                   </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-2">
+                <div className="mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {plan.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-center text-xs text-gray-300">
-                      <Check className="h-3 w-3 text-cyan-400 mr-2 flex-shrink-0" />
-                      {feature}
+                    <div key={featureIndex} className="flex items-start text-xs sm:text-sm text-gray-300">
+                      <Check className="h-3 w-3 sm:h-4 sm:w-4 text-cyan-400 mr-2 flex-shrink-0 mt-0.5" />
+                      <span className="leading-relaxed">{feature}</span>
                     </div>
                   ))}
                 </div>
