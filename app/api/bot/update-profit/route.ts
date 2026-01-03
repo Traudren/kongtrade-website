@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Получаем текущую конфигурацию
-    const config = await prisma.tradingConfig.findUnique({
-      where: { userId },
+    const config = await prisma.tradingConfig.findFirst({
+      where: { userId } as any,
       include: {
         user: {
           include: {
@@ -42,12 +42,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Обновляем профит и статистику
-    const newProfitPercent = config.currentProfitPercent + profitPercent
+    const newProfitPercent = (config.currentProfitPercent || 0) + profitPercent
     const isProfitable = profitPercent > 0
     const isLosing = profitPercent < 0
 
     await prisma.tradingConfig.update({
-      where: { userId },
+      where: { id: config.id },
       data: {
         currentProfitPercent: newProfitPercent,
         totalTrades: { increment: 1 },
@@ -55,22 +55,23 @@ export async function POST(request: NextRequest) {
         losingTrades: isLosing ? { increment: 1 } : undefined,
         lastTradeDate: new Date(),
         lastActivity: new Date()
-      }
+      } as any
     })
 
     // Проверяем, достигнут ли profit_limit
     let shouldDeactivate = false
     let deactivationReason = ''
 
-    if (config.profitLimit !== null && newProfitPercent >= config.profitLimit) {
+    const profitLimit = (config as any).profitLimit
+    if (profitLimit !== null && profitLimit !== undefined && newProfitPercent >= profitLimit) {
       shouldDeactivate = true
-      deactivationReason = `Profit limit reached: ${newProfitPercent.toFixed(2)}% >= ${config.profitLimit}%`
+      deactivationReason = `Profit limit reached: ${newProfitPercent.toFixed(2)}% >= ${profitLimit}%`
     }
 
     // Если нужно деактивировать
     if (shouldDeactivate) {
       await prisma.tradingConfig.update({
-        where: { userId },
+        where: { id: config.id },
         data: {
           isActive: false,
           botStatus: 'stopped'
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       currentProfitPercent: newProfitPercent,
-      profitLimit: config.profitLimit,
+      profitLimit: (config as any).profitLimit,
       deactivated: shouldDeactivate,
       deactivationReason: shouldDeactivate ? deactivationReason : null
     })

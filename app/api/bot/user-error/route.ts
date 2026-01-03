@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Получаем текущую конфигурацию
-    const config = await prisma.tradingConfig.findUnique({
-      where: { userId }
+    const config = await prisma.tradingConfig.findFirst({
+      where: { userId } as any
     })
 
     if (!config) {
@@ -31,11 +31,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Обновляем счетчик ошибок и последнюю ошибку
-    const newErrorCount = config.errorCount + 1
+    const newErrorCount = (config.errorCount || 0) + 1
     const shouldDeactivate = newErrorCount >= 3 // Деактивируем после 3 ошибок
 
     await prisma.tradingConfig.update({
-      where: { userId },
+      where: { id: config.id },
       data: {
         errorCount: newErrorCount,
         lastError: `${errorType || 'Unknown'}: ${error}`,
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
           isActive: false,
           botStatus: 'error'
         })
-      }
+      } as any
     })
 
     // Если критическая ошибка (неверные ключи) - деактивируем сразу
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     if (isCriticalError || shouldDeactivate) {
       await prisma.tradingConfig.update({
-        where: { userId },
+        where: { id: config.id },
         data: {
           isActive: false,
           botStatus: 'error'

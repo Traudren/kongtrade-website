@@ -18,14 +18,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Деактивируем конфигурацию
-    const config = await prisma.tradingConfig.update({
-      where: { userId },
-      data: {
-        isActive: false,
-        botStatus: 'stopped',
-        lastError: reason || 'Deactivated by bot'
-      },
+    // Находим конфигурацию пользователя
+    const config = await prisma.tradingConfig.findFirst({
+      where: { userId } as any,
       include: {
         user: {
           include: {
@@ -36,6 +31,23 @@ export async function POST(request: NextRequest) {
             }
           }
         }
+      }
+    })
+
+    if (!config) {
+      return NextResponse.json(
+        { success: false, error: 'Trading config not found' },
+        { status: 404 }
+      )
+    }
+
+    // Деактивируем конфигурацию
+    await prisma.tradingConfig.update({
+      where: { id: config.id },
+      data: {
+        isActive: false,
+        botStatus: 'stopped',
+        lastError: reason || 'Deactivated by bot'
       }
     })
 
