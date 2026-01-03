@@ -27,6 +27,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Получаем пользователя для проверки блокировки
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Проверяем блокировку пользователя
+    if (user.blockedUntil && new Date(user.blockedUntil) > new Date()) {
+      return NextResponse.json(
+        { 
+          error: `You are blocked until ${new Date(user.blockedUntil).toLocaleString()}. Please try again later.`,
+          blockedUntil: user.blockedUntil
+        },
+        { status: 403 }
+      )
+    }
+
     // Проверяем, есть ли у пользователя активный платеж со статусом PENDING
     const existingPendingPayment = await prisma.payment.findFirst({
       where: {
@@ -88,7 +111,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Отправляем уведомление в Telegram с конфигурацией пользователя
+    // Отправляем уведомление в Telegram с кнопками подтверждения/отмены
     try {
       if (payment.subscription && payment.user.configs && payment.user.configs.length > 0) {
         const userConfig = payment.user.configs[0] // Берем первую конфигурацию
@@ -98,7 +121,15 @@ export async function POST(request: NextRequest) {
         const telegramBotExchange = paymentMethod.toLowerCase() === 'binance' ? 'binance' : 'bybit'
         const telegram = new TelegramBot(telegramBotExchange)
         
-        await telegram.notifyNewPayment(payment.user, payment.subscription, payment, userConfig)
+        const result = await telegram.notifyNewPayment(payment.user, payment.subscription, payment, userConfig)
+        
+        // Сохраняем ID сообщения в базе данных
+        if (result.success && result.messageId) {
+          await prisma.payment.update({
+            where: { id: payment.id },
+            data: { telegramMessageId: result.messageId.toString() }
+          })
+        }
       }
     } catch (telegramError) {
       console.error('Telegram notification error:', telegramError)

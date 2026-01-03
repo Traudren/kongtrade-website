@@ -25,23 +25,82 @@ export class TelegramBot {
     }
   }
 
-  async sendMessage(text: string): Promise<boolean> {
+  async sendMessage(text: string, replyMarkup?: any): Promise<{ success: boolean; messageId?: number }> {
     try {
+      const body: any = {
+        chat_id: this.adminId,
+        text: text,
+        parse_mode: 'HTML',
+      }
+
+      if (replyMarkup) {
+        body.reply_markup = replyMarkup
+      }
+
       const response = await fetch(`https://api.telegram.org/bot${this.token}/sendMessage`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(body),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        return { success: true, messageId: data.result?.message_id }
+      }
+
+      return { success: false }
+    } catch (error) {
+      console.error('Telegram send message error:', error)
+      return { success: false }
+    }
+  }
+
+  async editMessageText(messageId: number, text: string, replyMarkup?: any): Promise<boolean> {
+    try {
+      const body: any = {
+        chat_id: this.adminId,
+        message_id: messageId,
+        text: text,
+        parse_mode: 'HTML',
+      }
+
+      if (replyMarkup) {
+        body.reply_markup = replyMarkup
+      }
+
+      const response = await fetch(`https://api.telegram.org/bot${this.token}/editMessageText`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      return response.ok
+    } catch (error) {
+      console.error('Telegram edit message error:', error)
+      return false
+    }
+  }
+
+  async answerCallbackQuery(callbackQueryId: string, text?: string): Promise<boolean> {
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${this.token}/answerCallbackQuery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          chat_id: this.adminId,
-          text: text,
-          parse_mode: 'HTML',
+          callback_query_id: callbackQueryId,
+          text: text || 'Processing...',
         }),
       })
 
       return response.ok
     } catch (error) {
-      console.error('Telegram send message error:', error)
+      console.error('Telegram answer callback error:', error)
       return false
     }
   }
@@ -69,12 +128,12 @@ export class TelegramBot {
     }
   }
 
-  async notifyNewPayment(user: any, subscription: any, payment: any, userConfig: any): Promise<boolean> {
+  async notifyNewPayment(user: any, subscription: any, payment: any, userConfig: any): Promise<{ success: boolean; messageId?: number }> {
     try {
       // Биржа из конфигурации пользователя (где он указал свои API ключи)
       const exchangeFromConfig = userConfig?.exchange || 'bybit'
       
-      const message = `🔔 <b>New Payment!</b>
+      const message = `🔔 <b>New Payment Request!</b>
 
 👤 <b>User:</b> ${user.name || 'Not specified'} (${user.email})
 💎 <b>Subscription:</b> ${subscription.planName}
@@ -82,37 +141,31 @@ export class TelegramBot {
 💰 <b>Amount:</b> $${payment.amount}
 🏦 <b>Exchange:</b> ${exchangeFromConfig}
 🆔 <b>TXID:</b> ${payment.txid || 'Not specified'}
+📅 <b>Date:</b> ${new Date(payment.createdAt).toLocaleString()}
 
-📄 Configuration file attached`
+⚠️ <b>Please verify the payment and click the button below:</b>`
 
-      // Определяем profit_limit на основе плана
-      let profitLimit = ''
-      if (subscription.planName === 'Basic') {
-        profitLimit = '25' // up to 25% of deposit
-      } else if (subscription.planName === 'Professional') {
-        profitLimit = '40' // up to 40% of deposit
-      } else if (subscription.planName === 'Premium') {
-        profitLimit = 'unlim' // unlimited
-      } else {
-        profitLimit = '25' // default
+      // Создаем inline кнопки
+      const replyMarkup = {
+        inline_keyboard: [
+          [
+            {
+              text: '✅ Подтвердить',
+              callback_data: `approve_payment_${payment.id}`
+            },
+            {
+              text: '❌ Отменить',
+              callback_data: `reject_payment_${payment.id}`
+            }
+          ]
+        ]
       }
 
-      // Determine subscription period
-      const subPeriod = subscription.planType === 'monthly' ? '30 days' : '90 days'
-
-      // Создаем правильный формат конфигурационного файла
-      const configContent = `user_name = '${user.name || 'NOT_PROVIDED'}'
-api_key = '${userConfig?.apiKey || 'NOT_PROVIDED'}'
-api_secret = '${userConfig?.apiSecret || 'NOT_PROVIDED'}'
-profit_limit = '${profitLimit}'
-sub_period = '${subPeriod}'`
-
-      const filename = `${user.name || user.email.split('@')[0]}_config.txt`
-      
-      return await this.sendDocument(message, filename, configContent)
+      const result = await this.sendMessage(message, replyMarkup)
+      return result
     } catch (error) {
       console.error('Error notifying new payment:', error)
-      return false
+      return { success: false }
     }
   }
 }

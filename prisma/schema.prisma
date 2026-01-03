@@ -47,6 +47,8 @@ model User {
   referralCode  String?   @unique // Уникальный реферальный код
   referredBy    String?   // ID того, кто пригласил
   totalEarnings Float     @default(0) // Общий заработок с рефералов
+  paymentAttempts Int     @default(0) // Количество неудачных попыток оплаты
+  blockedUntil  DateTime? // Дата до которой пользователь заблокирован
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -106,6 +108,7 @@ model Payment {
   walletAddress  String?
   txid           String?
   status         PaymentStatus @default(PENDING)
+  telegramMessageId String?   // ID сообщения в Telegram для обновления
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
