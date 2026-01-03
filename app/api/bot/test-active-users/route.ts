@@ -15,7 +15,6 @@ export async function GET(request: NextRequest) {
     // Получаем всех активных пользователей
     const whereClause: any = {
       isActive: true,
-      subscriptionStartDate: { not: null },
       user: {
         subscriptions: {
           some: {
@@ -43,28 +42,28 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: {
-        subscriptionStartDate: 'desc'
+        createdAt: 'desc'
       }
     })
 
     // Форматируем для удобного просмотра
-    const formattedUsers = activeUsers.map(config => ({
+    const formattedUsers = activeUsers.map((config: any) => ({
       userId: config.userId,
       userName: config.user?.name || config.user?.email || 'Unknown',
       userEmail: config.user?.email,
       exchange: config.exchange,
       isActive: config.isActive,
       botStatus: config.botStatus,
-      profitLimit: config.profitLimit,
-      subPeriodDays: config.subPeriodDays,
-      subscriptionStartDate: config.subscriptionStartDate,
-      currentProfitPercent: config.currentProfitPercent,
-      totalTrades: config.totalTrades,
-      profitableTrades: config.profitableTrades,
-      losingTrades: config.losingTrades,
+      profitLimit: config.profitLimit ?? null,
+      subPeriodDays: config.subPeriodDays ?? null,
+      subscriptionStartDate: config.subscriptionStartDate ?? null,
+      currentProfitPercent: config.currentProfitPercent ?? 0,
+      totalTrades: config.totalTrades ?? 0,
+      profitableTrades: config.profitableTrades ?? 0,
+      losingTrades: config.losingTrades ?? 0,
       hasApiKeys: !!(config.apiKey && config.apiSecret),
-      errorCount: config.errorCount,
-      lastError: config.lastError,
+      errorCount: config.errorCount ?? 0,
+      lastError: config.lastError ?? null,
       createdAt: config.createdAt,
       updatedAt: config.updatedAt
     }))
