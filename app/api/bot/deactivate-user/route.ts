@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         isActive: false,
         botStatus: 'stopped',
         lastError: reason || 'Deactivated by bot'
-      }
+      } as any
     })
 
     // Обновляем подписку
