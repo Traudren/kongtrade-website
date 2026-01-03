@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: {
-        subscriptionStartDate: 'desc'
+        createdAt: 'desc'
       }
     })
 
