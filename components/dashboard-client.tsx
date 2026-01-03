@@ -75,11 +75,12 @@ export function DashboardClient() {
   const [apiSecret, setApiSecret] = useState('')
 
   const fetchDashboardData = useCallback(async () => {
+    setLoading(true)
     try {
       const [subsRes, paymentsRes, configsRes] = await Promise.all([
-        fetch('/api/subscriptions'),
-        fetch('/api/payments'),
-        fetch('/api/trading-config')
+        fetch('/api/subscriptions', { cache: 'no-store' }),
+        fetch('/api/payments', { cache: 'no-store' }),
+        fetch('/api/trading-config', { cache: 'no-store' })
       ])
 
       if (subsRes.ok) {
@@ -104,8 +105,13 @@ export function DashboardClient() {
   }, [])
 
   useEffect(() => {
+    let mounted = true
     fetchDashboardData()
-  }, [fetchDashboardData])
+    
+    return () => {
+      mounted = false
+    }
+  }, []) // Убираем fetchDashboardData из зависимостей
 
   const handleConfigSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -201,6 +207,7 @@ export function DashboardClient() {
 
   const activeSubscription = subscriptions.find(sub => sub.status === 'ACTIVE')
 
+  // Мемоизируем активную подписку
   return (
     <div className="min-h-screen gradient-bg">
       <div className="max-w-7xl mx-auto px-4 py-8">
