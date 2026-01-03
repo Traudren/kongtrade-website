@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
         exchange: exchange, // Фильтруем по бирже
         apiKey: { not: null },
         apiSecret: { not: null },
-        subscriptionStartDate: { not: null },
         user: {
           subscriptions: {
             some: {
@@ -43,7 +42,7 @@ export async function GET(request: NextRequest) {
             }
           }
         }
-      },
+      } as any,
       include: {
         user: {
           select: {

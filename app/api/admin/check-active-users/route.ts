@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
       isActive: true,
       apiKey: { not: null },
       apiSecret: { not: null },
-      subscriptionStartDate: { not: null },
       user: {
         subscriptions: {
           some: {
