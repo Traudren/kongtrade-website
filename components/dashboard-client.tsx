@@ -457,6 +457,8 @@ export function DashboardClient() {
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                           allowFullScreen
                           className="w-full h-full"
+                          loading="lazy"
+                          style={{ willChange: 'auto' }}
                         />
                       </div>
                     </div>
