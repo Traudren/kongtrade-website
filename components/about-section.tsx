@@ -110,10 +110,10 @@ export function AboutSection() {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.8 }}
               viewport={{ once: true }}
-              className="absolute -bottom-6 -left-6 glass-effect rounded-xl p-4"
+              className="hidden sm:block absolute -bottom-6 -left-6 glass-effect rounded-xl p-3 sm:p-4"
             >
-              <div className="text-xl font-bold text-green-400">1K+</div>
-              <div className="text-sm text-gray-300">Active Traders</div>
+              <div className="text-lg sm:text-xl font-bold text-green-400">1K+</div>
+              <div className="text-xs sm:text-sm text-gray-300">Active Traders</div>
             </motion.div>
 
             <motion.div
@@ -121,10 +121,10 @@ export function AboutSection() {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 1 }}
               viewport={{ once: true }}
-              className="absolute -top-6 -right-6 glass-effect rounded-xl p-4"
+              className="hidden sm:block absolute -top-6 -right-6 glass-effect rounded-xl p-3 sm:p-4"
             >
-              <div className="text-xl font-bold text-cyan-400">$400K+</div>
-              <div className="text-sm text-gray-300">Trading Volume</div>
+              <div className="text-lg sm:text-xl font-bold text-cyan-400">$400K+</div>
+              <div className="text-xs sm:text-sm text-gray-300">Trading Volume</div>
             </motion.div>
           </motion.div>
         </div>
