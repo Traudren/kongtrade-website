@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     // Check if user already exists by name (никнейм)
     const existingUserByName = await prisma.user.findFirst({
       where: { name }
-      })
+    })
 
     if (existingUserByName) {
         return NextResponse.json(
