@@ -2,7 +2,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { AdminPanelClient } from '@/components/admin-panel-client'
+import { EnhancedAdminPanel } from '@/components/enhanced-admin-panel'
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions)
@@ -11,5 +11,5 @@ export default async function AdminPage() {
     redirect('/dashboard')
   }
 
-  return <AdminPanelClient />
+  return <EnhancedAdminPanel />
 }
