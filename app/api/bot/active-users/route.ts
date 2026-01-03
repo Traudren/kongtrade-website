@@ -65,15 +65,15 @@ export async function GET(request: NextRequest) {
       exchange: config.exchange,
       apiKey: config.apiKey,
       apiSecret: config.apiSecret,
-      profitLimit: config.profitLimit,
-      subPeriodDays: config.subPeriodDays,
-      subscriptionStartDate: config.subscriptionStartDate,
-      currentProfitPercent: config.currentProfitPercent,
-      totalTrades: config.totalTrades,
-      profitableTrades: config.profitableTrades,
-      losingTrades: config.losingTrades,
-      errorCount: config.errorCount,
-      lastError: config.lastError
+      profitLimit: config.profitLimit ?? null,
+      subPeriodDays: config.subPeriodDays ?? null,
+      subscriptionStartDate: config.subscriptionStartDate ?? null,
+      currentProfitPercent: config.currentProfitPercent ?? 0,
+      totalTrades: config.totalTrades ?? 0,
+      profitableTrades: config.profitableTrades ?? 0,
+      losingTrades: config.losingTrades ?? 0,
+      errorCount: config.errorCount ?? 0,
+      lastError: config.lastError ?? null
     }))
 
     return NextResponse.json({
