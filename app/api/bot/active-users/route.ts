@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: {
-        subscriptionStartDate: 'asc' // Старые подписки первыми
+        createdAt: 'asc' // Старые подписки первыми
       }
     })
 
