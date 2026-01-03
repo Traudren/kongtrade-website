@@ -57,6 +57,9 @@ sub_period = '${subPeriod}'`
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    
+    // Логируем входящий запрос для отладки
+    console.log('📥 Telegram webhook received:', JSON.stringify(body, null, 2))
 
     // Обработка callback query от inline кнопок
     if (body.callback_query) {
@@ -65,16 +68,42 @@ export async function POST(request: NextRequest) {
       const messageId = callbackQuery.message?.message_id
       const chatId = callbackQuery.message?.chat?.id
 
-      // Определяем какой бот использовался (по chat_id или токену)
-      // Для упрощения используем первый токен (можно улучшить логику)
-      const telegram = new TelegramBot('bybit') // По умолчанию, можно улучшить
+      console.log('🔘 Callback query received:', {
+        callbackData,
+        messageId,
+        chatId,
+        from: callbackQuery.from
+      })
+
+      // Парсим paymentId из callback_data для определения бота
+      let paymentId: string | null = null
+      if (callbackData.startsWith('approve_payment_')) {
+        paymentId = callbackData.replace('approve_payment_', '')
+      } else if (callbackData.startsWith('reject_payment_')) {
+        paymentId = callbackData.replace('reject_payment_', '')
+      }
+
+      // Получаем платеж для определения бота
+      let botExchange = 'bybit' // По умолчанию
+      if (paymentId) {
+        const payment = await prisma.payment.findUnique({
+          where: { id: paymentId },
+          select: { paymentMethod: true }
+        })
+        if (payment) {
+          botExchange = payment.paymentMethod?.toLowerCase() === 'binance' ? 'binance' : 'bybit'
+        }
+      }
+
+      const telegram = new TelegramBot(botExchange)
 
       // Отвечаем на callback query
-      await telegram.answerCallbackQuery(callbackQuery.id, 'Processing...')
+      const answerResult = await telegram.answerCallbackQuery(callbackQuery.id, 'Processing...')
+      console.log('✅ Callback query answered:', answerResult)
 
       // Парсим callback_data
-      if (callbackData.startsWith('approve_payment_')) {
-        const paymentId = callbackData.replace('approve_payment_', '')
+      if (callbackData.startsWith('approve_payment_') && paymentId) {
+        console.log('✅ Approve payment requested:', paymentId)
         
         // Получаем платеж с полной информацией
         const payment = await prisma.payment.findUnique({
@@ -90,8 +119,8 @@ export async function POST(request: NextRequest) {
         })
 
         if (!payment) {
-          const bot = new TelegramBot('bybit')
-          await bot.editMessageText(
+          console.error('❌ Payment not found:', paymentId)
+          await telegram.editMessageText(
             messageId!,
             '❌ Payment not found',
             undefined
@@ -100,19 +129,14 @@ export async function POST(request: NextRequest) {
         }
 
         if (payment.status !== 'PENDING') {
-          const botExchange = payment.paymentMethod?.toLowerCase() === 'binance' ? 'binance' : 'bybit'
-          const bot = new TelegramBot(botExchange)
-          await bot.editMessageText(
+          console.warn('⚠️ Payment already processed:', payment.status)
+          await telegram.editMessageText(
             messageId!,
             `⚠️ Payment already processed. Status: ${payment.status}`,
             undefined
           )
           return NextResponse.json({ ok: true })
         }
-
-        // Определяем бота по paymentMethod
-        const botExchange = payment.paymentMethod?.toLowerCase() === 'binance' ? 'binance' : 'bybit'
-        const bot = new TelegramBot(botExchange)
 
         // Обновляем статус платежа
         await prisma.payment.update({
@@ -161,12 +185,15 @@ export async function POST(request: NextRequest) {
 
 ✅ Subscription activated and config file created.`
 
-        await bot.editMessageText(messageId!, successMessage, undefined)
+        const editResult = await telegram.editMessageText(messageId!, successMessage, undefined)
+        console.log('✅ Message edited:', editResult)
 
         return NextResponse.json({ ok: true })
 
       } else if (callbackData.startsWith('reject_payment_')) {
         const paymentId = callbackData.replace('reject_payment_', '')
+        
+        console.log('❌ Reject payment requested:', paymentId)
         
         // Получаем платеж
         const payment = await prisma.payment.findUnique({
@@ -177,8 +204,8 @@ export async function POST(request: NextRequest) {
         })
 
         if (!payment) {
-          const bot = new TelegramBot('bybit')
-          await bot.editMessageText(
+          console.error('❌ Payment not found:', paymentId)
+          await telegram.editMessageText(
             messageId!,
             '❌ Payment not found',
             undefined
@@ -187,19 +214,14 @@ export async function POST(request: NextRequest) {
         }
 
         if (payment.status !== 'PENDING') {
-          const botExchange = payment.paymentMethod?.toLowerCase() === 'binance' ? 'binance' : 'bybit'
-          const bot = new TelegramBot(botExchange)
-          await bot.editMessageText(
+          console.warn('⚠️ Payment already processed:', payment.status)
+          await telegram.editMessageText(
             messageId!,
             `⚠️ Payment already processed. Status: ${payment.status}`,
             undefined
           )
           return NextResponse.json({ ok: true })
         }
-
-        // Определяем бота по paymentMethod
-        const botExchange = payment.paymentMethod?.toLowerCase() === 'binance' ? 'binance' : 'bybit'
-        const bot = new TelegramBot(botExchange)
 
         // Обновляем статус платежа на FAILED
         await prisma.payment.update({
@@ -240,16 +262,20 @@ ${blockedUntil ? `🚫 <b>Blocked until:</b> ${blockedUntil.toLocaleString()}` :
 
 ❌ Payment rejected. User can try again.`
 
-          await bot.editMessageText(messageId!, rejectMessage, undefined)
+          const editResult = await telegram.editMessageText(messageId!, rejectMessage, undefined)
+          console.log('✅ Reject message edited:', editResult)
         }
 
         return NextResponse.json({ ok: true })
       }
     }
 
+    // Если это не callback_query, просто возвращаем ok
+    console.log('ℹ️ Non-callback query received, ignoring')
     return NextResponse.json({ ok: true })
   } catch (error) {
-    console.error('Telegram webhook error:', error)
+    console.error('❌ Telegram webhook error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
