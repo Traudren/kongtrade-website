@@ -39,15 +39,6 @@ async function generateUniqueReferralCode(): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
-    // Проверяем подключение к базе данных
-    if (!prisma) {
-      console.error('Prisma client is not initialized')
-      return NextResponse.json(
-        { error: 'Database connection error' },
-        { status: 500 }
-      )
-    }
-
     const { name, email, password } = await request.json()
 
     if (!name || !email || !password) {
@@ -72,7 +63,7 @@ export async function POST(request: NextRequest) {
     // Check if user already exists by name (никнейм)
     const existingUserByName = await prisma.user.findFirst({
       where: { name }
-    })
+      })
 
     if (existingUserByName) {
         return NextResponse.json(
@@ -106,9 +97,6 @@ export async function POST(request: NextRequest) {
     )
   } catch (error: any) {
     console.error('Registration error:', error)
-    console.error('Error stack:', error.stack)
-    console.error('Error message:', error.message)
-    console.error('Error code:', error.code)
     
     // Более детальная обработка ошибок
     if (error.code === 'P2002') {
@@ -141,21 +129,10 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Логируем полную информацию об ошибке для отладки
-    const errorDetails = {
-      message: error.message,
-      code: error.code,
-      name: error.name,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    }
-    
-    console.error('Full error details:', JSON.stringify(errorDetails, null, 2))
-    
     return NextResponse.json(
       { 
         error: 'Internal server error. Please try again.',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
-        code: error.code || 'UNKNOWN'
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       },
       { status: 500 }
     )

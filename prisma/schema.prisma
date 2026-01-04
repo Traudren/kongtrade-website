@@ -120,22 +120,33 @@ model Payment {
 }
 
 model TradingConfig {
-  id           String   @id @default(cuid())
-  userId       String
-  exchange     String   // binance, bybit
-  apiKey       String?
-  apiSecret    String?
-  isActive     Boolean  @default(false)
-  botStatus    String   @default("not_launched") // not_launched, running, stopped, error
-  lastActivity DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  userId               String
+  exchange             String   // binance, bybit
+  apiKey               String?
+  apiSecret            String?
+  isActive             Boolean  @default(false)
+  botStatus            String   @default("not_launched") // not_launched, running, stopped, error
+  lastActivity         DateTime?
+  totalTrades          Int      @default(0)
+  profitLimit         Float?   // Лимит прибыли (25, 40, или null для unlim)
+  subPeriodDays        Int?     // Период подписки в днях (30 или 90)
+  subscriptionStartDate DateTime? // Дата начала подписки
+  currentProfitPercent Float   @default(0) // Текущий процент прибыли
+  profitableTrades     Int      @default(0) // Количество прибыльных сделок
+  losingTrades         Int      @default(0) // Количество убыточных сделок
+  lastTradeDate        DateTime? // Дата последней сделки
+  errorCount           Int      @default(0) // Количество ошибок
+  lastError            String?  // Последняя ошибка
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, exchange])
   @@index([userId])
   @@index([botStatus])
+  @@index([isActive])
 }
 
 model ContactForm {
