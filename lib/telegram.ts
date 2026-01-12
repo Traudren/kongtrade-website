@@ -153,6 +153,11 @@ export class TelegramBot {
         formData.append('parse_mode', 'HTML')
       }
       
+      // Добавляем кнопки если есть
+      if (replyMarkup) {
+        formData.append('reply_markup', JSON.stringify(replyMarkup))
+      }
+      
       // Добавляем содержимое файла напрямую из памяти
       const buffer = typeof fileContent === 'string' ? Buffer.from(fileContent, 'utf8') : fileContent
       
