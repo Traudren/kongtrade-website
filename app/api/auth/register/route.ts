@@ -39,6 +39,23 @@ async function generateUniqueReferralCode(): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    // Проверка подключения к БД перед началом работы
+    try {
+      await prisma.$queryRaw`SELECT 1`
+    } catch (dbError: any) {
+      console.error('Database connection test failed:', dbError)
+      console.error('DATABASE_URL exists:', !!process.env.DATABASE_URL)
+      console.error('DATABASE_URL starts with:', process.env.DATABASE_URL?.substring(0, 20))
+      
+      return NextResponse.json(
+        { 
+          error: 'Database connection error. Please try again later.',
+          details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+        },
+        { status: 500 }
+      )
+    }
+
     const { name, email, password } = await request.json()
 
     if (!name || !email || !password) {
@@ -124,10 +141,31 @@ export async function POST(request: NextRequest) {
     }
     
     // Проверка ошибок подключения к базе данных
-    if (error.code === 'P1001' || error.code === 'P1017' || error.message?.includes('Can\'t reach database') || error.message?.includes('connection')) {
+    const connectionErrorCodes = ['P1001', 'P1017', 'P1000', 'P1008', 'P1011']
+    const connectionErrorMessages = [
+      'Can\'t reach database',
+      'connection',
+      'Connection',
+      'timeout',
+      'Timeout',
+      'ECONNREFUSED',
+      'ENOTFOUND',
+      'ETIMEDOUT'
+    ]
+    
+    if (
+      connectionErrorCodes.includes(error.code) || 
+      connectionErrorMessages.some(msg => error.message?.includes(msg))
+    ) {
       console.error('Database connection error:', error.message)
+      console.error('Error code:', error.code)
+      console.error('DATABASE_URL configured:', !!process.env.DATABASE_URL)
+      
       return NextResponse.json(
-        { error: 'Database connection error. Please try again later.' },
+        { 
+          error: 'Database connection error. Please try again later.',
+          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        },
         { status: 500 }
       )
     }
