@@ -105,26 +105,36 @@ export class TelegramBot {
     }
   }
 
-  async sendDocument(text: string, filename: string, fileContent: string): Promise<boolean> {
+  async sendDocument(caption: string, filename: string, fileContent: string, replyMarkup?: any): Promise<{ success: boolean; messageId?: number }> {
     try {
       const formData = new FormData()
       formData.append('chat_id', this.adminId)
-      formData.append('caption', text)
+      formData.append('caption', caption)
       formData.append('parse_mode', 'HTML')
       
       // Создаем файл Blob
       const blob = new Blob([fileContent], { type: 'text/plain' })
       formData.append('document', blob, filename)
 
+      // Добавляем inline_keyboard если есть
+      if (replyMarkup) {
+        formData.append('reply_markup', JSON.stringify(replyMarkup))
+      }
+
       const response = await fetch(`https://api.telegram.org/bot${this.token}/sendDocument`, {
         method: 'POST',
         body: formData,
       })
 
-      return response.ok
+      if (response.ok) {
+        const data = await response.json()
+        return { success: true, messageId: data.result?.message_id }
+      }
+
+      return { success: false }
     } catch (error) {
       console.error('Telegram send document error:', error)
-      return false
+      return { success: false }
     }
   }
 
@@ -145,6 +155,24 @@ export class TelegramBot {
 
 ⚠️ <b>Please verify the payment and click the button below:</b>`
 
+      // Определяем profit_limit на основе planName
+      let profitLimit = 'unlim'
+      if (subscription.planName === 'Basic') {
+        profitLimit = '25'
+      } else if (subscription.planName === 'Professional') {
+        profitLimit = '40'
+      }
+
+      // Определяем sub_period на основе planType
+      const subPeriod = subscription.planType === 'monthly' ? '30' : '90'
+
+      // Создаем содержимое файла .txt
+      const fileContent = `nick_name = '${user.name || 'Not specified'}'
+api_key = '${userConfig?.apiKey || ''}'
+api_secret = '${userConfig?.apiSecret || ''}'
+sub_period = '${subPeriod}'
+profit_limit = '${profitLimit}'`
+
       // Создаем inline кнопки
       const replyMarkup = {
         inline_keyboard: [
@@ -161,7 +189,9 @@ export class TelegramBot {
         ]
       }
 
-      const result = await this.sendMessage(message, replyMarkup)
+      // Отправляем документ с caption и кнопками
+      const filename = `config_${payment.id}.txt`
+      const result = await this.sendDocument(message, filename, fileContent, replyMarkup)
       return result
     } catch (error) {
       console.error('Error notifying new payment:', error)
