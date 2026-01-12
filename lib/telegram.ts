@@ -85,6 +85,37 @@ export class TelegramBot {
     }
   }
 
+  async editMessageCaption(messageId: number, caption: string, replyMarkup?: any): Promise<boolean> {
+    try {
+      const body: any = {
+        chat_id: this.adminId,
+        message_id: messageId,
+        caption: caption,
+        parse_mode: 'HTML',
+      }
+
+      // Если replyMarkup не передан, убираем кнопки (передаем пустой объект)
+      if (replyMarkup !== undefined) {
+        body.reply_markup = replyMarkup
+      } else {
+        body.reply_markup = { inline_keyboard: [] } // Убираем кнопки
+      }
+
+      const response = await fetch(`https://api.telegram.org/bot${this.token}/editMessageCaption`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      return response.ok
+    } catch (error) {
+      console.error('Telegram edit message caption error:', error)
+      return false
+    }
+  }
+
   async answerCallbackQuery(callbackQueryId: string, text?: string): Promise<boolean> {
     try {
       const response = await fetch(`https://api.telegram.org/bot${this.token}/answerCallbackQuery`, {
@@ -184,7 +215,27 @@ export class TelegramBot {
       // Биржа из конфигурации пользователя (где он указал свои API ключи)
       const exchangeFromConfig = userConfig?.exchange || 'bybit'
       
-      const message = `🔔 <b>New Payment Request!</b>
+      // Определяем profit_limit на основе плана
+      let profitLimit = '25'
+      if (subscription.planName === 'Basic') {
+        profitLimit = '25'
+      } else if (subscription.planName === 'Professional') {
+        profitLimit = '40'
+      } else if (subscription.planName === 'Premium') {
+        profitLimit = 'unlim'
+      }
+
+      // Определяем период подписки
+      const subPeriod = subscription.planType === 'monthly' ? '30' : '90'
+
+      // Создаем содержимое файла в правильном формате
+      const fileContent = `exchange = ${exchangeFromConfig}
+api_key = ${userConfig?.apiKey || 'НЕ_УКАЗАН'}
+api_secret = ${userConfig?.apiSecret || 'НЕ_УКАЗАН'}
+sub_period = ${subPeriod}
+profit_limit = ${profitLimit}`
+
+      const caption = `🔔 <b>New Payment Request!</b>
 
 👤 <b>User:</b> ${user.name || 'Not specified'} (${user.email})
 💎 <b>Subscription:</b> ${subscription.planName}
@@ -212,7 +263,8 @@ export class TelegramBot {
         ]
       }
 
-      const result = await this.sendMessage(message, replyMarkup)
+      // Отправляем файл с подписью и кнопками сразу
+      const result = await this.sendDocument(fileContent, caption, 'user.txt', replyMarkup)
       return result
     } catch (error) {
       console.error('Error notifying new payment:', error)

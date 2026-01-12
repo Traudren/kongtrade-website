@@ -167,54 +167,23 @@ export async function POST(request: NextRequest) {
           })
         }
 
-        // Создаем конфигурационный файл и отправляем его в Telegram
+        // Обновляем сообщение - убираем кнопки, оставляем файл
         try {
-          console.log('📝 Creating config file content...')
-          let configContent: string
-          
-          if (payment.user.configs && payment.user.configs.length > 0) {
-            console.log('✅ User config found, using it')
-            const userConfig = payment.user.configs[0]
-            configContent = createUserConfigContent(payment.user, payment.subscription, userConfig)
-          } else {
-            console.log('⚠️ No user config found, using default values')
-            // Если нет конфига, создаем файл с дефолтными значениями
-            const defaultConfig = {
-              exchange: 'bybit',
-              apiKey: 'НЕ_УКАЗАН',
-              apiSecret: 'НЕ_УКАЗАН',
-              tgToken: '8159634915:AAGLifkNfM5iws0t8Lj0kdpVgG-IdKFNB54',
-              adminId: '5351584188'
-            }
-            configContent = createUserConfigContent(payment.user, payment.subscription, defaultConfig)
-          }
-          
-          console.log('✅ Config content created, length:', configContent.length)
-          console.log('Config content preview:', configContent.substring(0, 100))
-          
-          // Отправляем файл в Telegram с подписью
-          const successCaption = `✅ <b>Payment Approved!</b>
+          // Telegram не позволяет редактировать сообщения с документами
+          // Поэтому просто обновляем текст через editMessageText (кнопки уберутся автоматически)
+          // Но так как это сообщение с документом, нужно использовать editMessageCaption
+          const successMessage = `✅ <b>Payment Approved!</b>
 
 👤 <b>User:</b> ${payment.user.name || payment.user.email}
 💰 <b>Amount:</b> $${payment.amount}
 💎 <b>Subscription:</b> ${payment.subscription?.planName} - ACTIVE
 📅 <b>Period:</b> ${payment.subscription?.planType === 'monthly' ? '30 days' : '90 days'}
 
-✅ Subscription activated and config file created.`
+✅ Subscription activated.`
 
-          console.log('📤 Sending document to Telegram...')
-          const sendFileResult = await telegram.sendDocument(configContent, successCaption, 'user.txt')
-          console.log('📥 Send file result:', sendFileResult)
-          
-          if (!sendFileResult.success) {
-            console.error('❌ Failed to send document to Telegram')
-            throw new Error('Failed to send document to Telegram')
-          }
-          
-          console.log('✅ Document sent successfully, deleting old message...')
-          // Удаляем старое сообщение с кнопками
-          const deleteResult = await telegram.deleteMessage(messageId!)
-          console.log('✅ Old message deleted:', deleteResult)
+          // Обновляем подпись к файлу (убираем кнопки)
+          const editResult = await telegram.editMessageCaption(messageId!, successMessage)
+          console.log('✅ Message caption updated (buttons removed):', editResult)
         } catch (fileError) {
           console.error('❌ Error creating/sending config file:', fileError)
           console.error('Error type:', fileError instanceof Error ? fileError.constructor.name : typeof fileError)
