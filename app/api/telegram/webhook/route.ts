@@ -123,13 +123,35 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ ok: true })
         }
 
+        // Если платеж уже обработан, но файл еще не отправлен - отправляем файл
         if (payment.status !== 'PENDING') {
           console.warn('⚠️ Payment already processed:', payment.status)
-          await telegram.editMessageText(
-            messageId!,
-            `⚠️ Payment already processed. Status: ${payment.status}`,
-            undefined
-          )
+          
+          // Проверяем, есть ли у пользователя конфигурация и отправляем файл если нужно
+          if (payment.user.configs && payment.user.configs.length > 0) {
+            const userConfig = payment.user.configs[0]
+            try {
+              const configFilePath = await createUserConfigFile(payment.user, payment.subscription, userConfig)
+              
+              const successCaption = `✅ <b>Payment Already Approved</b>
+
+👤 <b>User:</b> ${payment.user.name || payment.user.email}
+💰 <b>Amount:</b> $${payment.amount}
+💎 <b>Subscription:</b> ${payment.subscription?.planName} - ${payment.subscription?.status}
+📅 <b>Period:</b> ${payment.subscription?.planType === 'monthly' ? '30 days' : '90 days'}
+
+📎 Config file:`
+
+              const sendFileResult = await telegram.sendDocument(configFilePath, successCaption)
+              console.log('✅ Config file sent (already processed):', sendFileResult)
+              
+              // Удаляем старое сообщение
+              await telegram.deleteMessage(messageId!)
+            } catch (error) {
+              console.error('Error sending file for already processed payment:', error)
+            }
+          }
+          
           return NextResponse.json({ ok: true })
         }
 
