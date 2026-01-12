@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     // Check if user already exists by name (никнейм)
     const existingUserByName = await prisma.user.findFirst({
       where: { name }
-      })
+    })
 
     if (existingUserByName) {
         return NextResponse.json(
@@ -97,6 +97,9 @@ export async function POST(request: NextRequest) {
     )
   } catch (error: any) {
     console.error('Registration error:', error)
+    console.error('Error stack:', error.stack)
+    console.error('Error code:', error.code)
+    console.error('Error message:', error.message)
     
     // Более детальная обработка ошибок
     if (error.code === 'P2002') {

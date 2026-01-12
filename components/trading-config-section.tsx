@@ -27,7 +27,7 @@ export function TradingConfigSection() {
   const { toast } = useToast()
 
   // Form state
-  const [exchange, setExchange] = useState('')
+  const [exchange, setExchange] = useState('bybit')
   const [apiKey, setApiKey] = useState('')
   const [apiSecret, setApiSecret] = useState('')
   const [tgToken, setTgToken] = useState('')
@@ -223,22 +223,6 @@ export function TradingConfigSection() {
                           onClick={(e) => {
                             e.preventDefault()
                             e.stopPropagation()
-                            setExchange('binance')
-                            setExchangeDropdownOpen(false)
-                          }}
-                          className="w-full flex items-center px-3 py-2 text-sm text-white rounded-lg hover:bg-white/10 transition-colors"
-                        >
-                          <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#F0B90B"/>
-                            <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#F0B90B"/>
-                          </svg>
-                          <span>Binance</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
                             setExchange('bybit')
                             setExchangeDropdownOpen(false)
                           }}
@@ -250,6 +234,31 @@ export function TradingConfigSection() {
                           </svg>
                           <span>Bybit</span>
                         </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            toast({
+                              title: "Coming Soon",
+                              description: "Coming soon - binance, bingx, bitget, mexc",
+                              variant: "default",
+                            })
+                            setExchangeDropdownOpen(false)
+                          }}
+                          className="w-full flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-white/5 transition-colors cursor-not-allowed opacity-60"
+                          disabled
+                        >
+                          <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#F0B90B"/>
+                            <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#F0B90B"/>
+                          </svg>
+                          <span>Binance</span>
+                          <span className="ml-auto text-xs text-gray-500">Coming Soon</span>
+                        </button>
+                        <div className="px-3 py-2 text-xs text-gray-500 border-t border-white/10 mt-1 pt-2">
+                          Coming soon: binance, bingx, bitget, mexc
+                        </div>
                       </div>
                     </div>
                   )}
