@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic"
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     // Проверка API ключа
@@ -30,9 +30,19 @@ export async function PATCH(
       )
     }
 
-    const { userId } = params
+    const { userId } = await params
     const body = await request.json()
-    const { bot_status, last_activity } = body
+    const { 
+      bot_status, 
+      last_activity,
+      total_trades,
+      current_profit_percent,
+      profitable_trades,
+      losing_trades,
+      last_trade_date,
+      error_count,
+      last_error
+    } = body
 
     if (!bot_status) {
       return NextResponse.json(
@@ -48,6 +58,34 @@ export async function PATCH(
 
     if (last_activity) {
       updateData.lastActivity = new Date(last_activity)
+    }
+
+    if (total_trades !== undefined) {
+      updateData.totalTrades = total_trades
+    }
+
+    if (current_profit_percent !== undefined) {
+      updateData.currentProfitPercent = current_profit_percent
+    }
+
+    if (profitable_trades !== undefined) {
+      updateData.profitableTrades = profitable_trades
+    }
+
+    if (losing_trades !== undefined) {
+      updateData.losingTrades = losing_trades
+    }
+
+    if (last_trade_date) {
+      updateData.lastTradeDate = new Date(last_trade_date)
+    }
+
+    if (error_count !== undefined) {
+      updateData.errorCount = error_count
+    }
+
+    if (last_error !== undefined) {
+      updateData.lastError = last_error
     }
 
     const updated = await prisma.tradingConfig.updateMany({

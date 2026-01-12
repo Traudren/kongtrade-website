@@ -10,7 +10,7 @@ const prisma = new PrismaClient()
 // PATCH - обновить статус вывода (одобрить/отклонить)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -24,8 +24,9 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
+    const { id } = await params
     const withdrawal = await prisma.referralWithdrawal.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status,
         processedAt: new Date()

@@ -125,7 +125,14 @@ export async function GET(request: NextRequest) {
             config_id: config.id,
             is_active: config.isActive,
             bot_status: config.botStatus,
-            last_activity: config.lastActivity?.toISOString()
+            last_activity: config.lastActivity?.toISOString(),
+            total_trades: config.totalTrades,
+            current_profit_percent: config.currentProfitPercent,
+            profitable_trades: config.profitableTrades,
+            losing_trades: config.losingTrades,
+            last_trade_date: config.lastTradeDate?.toISOString(),
+            error_count: config.errorCount,
+            last_error: config.lastError
           }
         }
       })
