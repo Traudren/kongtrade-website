@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment record
+    console.log('💾 Creating payment record...')
     const payment = await prisma.payment.create({
       data: {
         userId: session.user.id,
@@ -124,6 +125,15 @@ export async function POST(request: NextRequest) {
           }
         }
       }
+    })
+    console.log('✅ Payment created:', payment.id)
+    console.log('📊 Payment details:', {
+      userId: payment.userId,
+      subscriptionId: payment.subscriptionId,
+      amount: payment.amount,
+      hasSubscription: !!payment.subscription,
+      hasUserConfigs: !!payment.user.configs,
+      configsCount: payment.user.configs?.length || 0
     })
 
     // Отправляем уведомление в Telegram с кнопками подтверждения/отмены
