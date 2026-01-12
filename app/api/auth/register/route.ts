@@ -43,9 +43,14 @@ export async function POST(request: NextRequest) {
     try {
       await prisma.$queryRaw`SELECT 1`
     } catch (dbError: any) {
-      console.error('Database connection test failed:', dbError)
+      console.error('❌ Database connection test failed')
+      console.error('Error code:', dbError.code)
+      console.error('Error message:', dbError.message)
       console.error('DATABASE_URL exists:', !!process.env.DATABASE_URL)
-      console.error('DATABASE_URL starts with:', process.env.DATABASE_URL?.substring(0, 20))
+      console.error('DATABASE_URL format:', process.env.DATABASE_URL?.includes('pooler') ? 'Has pooler' : 'No pooler')
+      console.error('DATABASE_URL port:', process.env.DATABASE_URL?.includes(':6543') ? '6543 (correct)' : process.env.DATABASE_URL?.includes(':5432') ? '5432 (WRONG for Vercel!)' : 'unknown')
+      console.error('VERCEL env:', process.env.VERCEL)
+      console.error('NODE_ENV:', process.env.NODE_ENV)
       
       return NextResponse.json(
         { 
