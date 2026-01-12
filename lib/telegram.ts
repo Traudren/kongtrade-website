@@ -136,7 +136,7 @@ export class TelegramBot {
     }
   }
 
-  async sendDocument(fileContent: string | Buffer, caption?: string, filename: string = 'user.txt'): Promise<{ success: boolean; messageId?: number }> {
+  async sendDocument(fileContent: string | Buffer, caption?: string, filename: string = 'user.txt', replyMarkup?: any): Promise<{ success: boolean; messageId?: number }> {
     try {
       console.log('📤 Sending document to Telegram...')
       console.log('File content length:', typeof fileContent === 'string' ? fileContent.length : fileContent.length)
