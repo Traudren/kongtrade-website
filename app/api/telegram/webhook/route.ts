@@ -165,13 +165,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Создаем конфигурационный файл и отправляем его в Telegram
-        let configFilePath: string | null = null
-        if (payment.user.configs && payment.user.configs.length > 0) {
-          const userConfig = payment.user.configs[0]
-          configFilePath = await createUserConfigFile(payment.user, payment.subscription, userConfig)
-          
-          // Отправляем файл в Telegram с подписью
-          const successCaption = `✅ <b>Payment Approved!</b>
+        try {
+          if (payment.user.configs && payment.user.configs.length > 0) {
+            const userConfig = payment.user.configs[0]
+            const configFilePath = await createUserConfigFile(payment.user, payment.subscription, userConfig)
+            
+            // Отправляем файл в Telegram с подписью
+            const successCaption = `✅ <b>Payment Approved!</b>
 
 👤 <b>User:</b> ${payment.user.name || payment.user.email}
 💰 <b>Amount:</b> $${payment.amount}
@@ -180,25 +180,56 @@ export async function POST(request: NextRequest) {
 
 ✅ Subscription activated and config file created.`
 
-          const sendFileResult = await telegram.sendDocument(configFilePath, successCaption)
-          console.log('✅ Config file sent to Telegram:', sendFileResult)
-          
-          // Удаляем старое сообщение с кнопками
-          await telegram.deleteMessage(messageId!)
-          console.log('✅ Old message deleted')
-        } else {
-          // Если нет конфига, просто обновляем сообщение
-          const successMessage = `✅ <b>Payment Approved!</b>
+            const sendFileResult = await telegram.sendDocument(configFilePath, successCaption)
+            console.log('✅ Config file sent to Telegram:', sendFileResult)
+            
+            if (!sendFileResult.success) {
+              console.error('❌ Failed to send document to Telegram')
+            }
+            
+            // Удаляем старое сообщение с кнопками
+            const deleteResult = await telegram.deleteMessage(messageId!)
+            console.log('✅ Old message deleted:', deleteResult)
+          } else {
+            // Если нет конфига, создаем файл с дефолтными значениями
+            const defaultConfig = {
+              exchange: 'bybit',
+              apiKey: 'НЕ_УКАЗАН',
+              apiSecret: 'НЕ_УКАЗАН',
+              tgToken: '8159634915:AAGLifkNfM5iws0t8Lj0kdpVgG-IdKFNB54',
+              adminId: '5351584188'
+            }
+            
+            const configFilePath = await createUserConfigFile(payment.user, payment.subscription, defaultConfig)
+            
+            const successCaption = `✅ <b>Payment Approved!</b>
 
 👤 <b>User:</b> ${payment.user.name || payment.user.email}
 💰 <b>Amount:</b> $${payment.amount}
 💎 <b>Subscription:</b> ${payment.subscription?.planName} - ACTIVE
 📅 <b>Period:</b> ${payment.subscription?.planType === 'monthly' ? '30 days' : '90 days'}
 
-⚠️ User config not found.`
+⚠️ User config not found. File created with default values.`
 
-          const editResult = await telegram.editMessageText(messageId!, successMessage, undefined)
-          console.log('✅ Message edited:', editResult)
+            const sendFileResult = await telegram.sendDocument(configFilePath, successCaption)
+            console.log('✅ Config file sent (default values):', sendFileResult)
+            
+            // Удаляем старое сообщение
+            await telegram.deleteMessage(messageId!)
+          }
+        } catch (fileError) {
+          console.error('❌ Error creating/sending config file:', fileError)
+          
+          // Если ошибка с файлом, хотя бы обновляем сообщение
+          const errorMessage = `✅ <b>Payment Approved!</b>
+
+👤 <b>User:</b> ${payment.user.name || payment.user.email}
+💰 <b>Amount:</b> $${payment.amount}
+💎 <b>Subscription:</b> ${payment.subscription?.planName} - ACTIVE
+
+⚠️ Error creating config file. Please check logs.`
+
+          await telegram.editMessageText(messageId!, errorMessage, undefined)
         }
 
         return NextResponse.json({ ok: true })
