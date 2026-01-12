@@ -9,16 +9,31 @@ export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('📥 POST /api/payments - Request received')
+    
     const session = await getServerSession(authOptions)
+    console.log('👤 Session exists:', !!session)
+    console.log('👤 User ID:', session?.user?.id)
     
     if (!session?.user) {
+      console.error('❌ Unauthorized - no session')
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const { amount, paymentMethod, walletAddress, txid, planName, planType } = await request.json()
+    const body = await request.json()
+    console.log('📦 Request body:', { 
+      amount: body.amount, 
+      paymentMethod: body.paymentMethod, 
+      planName: body.planName, 
+      planType: body.planType,
+      hasTxid: !!body.txid,
+      hasWalletAddress: !!body.walletAddress
+    })
+    
+    const { amount, paymentMethod, walletAddress, txid, planName, planType } = body
 
     if (!amount || !paymentMethod || !walletAddress || !txid) {
       return NextResponse.json(
