@@ -105,13 +105,11 @@ export class TelegramBot {
     }
   }
 
-  async sendDocument(filePath: string, caption?: string): Promise<{ success: boolean; messageId?: number }> {
+  async sendDocument(fileContent: string | Buffer, caption?: string, filename: string = 'user.txt'): Promise<{ success: boolean; messageId?: number }> {
     try {
       // Используем динамический импорт для form-data
       const FormDataModule = await import('form-data')
       const FormData = FormDataModule.default || FormDataModule
-      const fs = require('fs')
-      const path = require('path')
       
       const formData = new FormData()
       formData.append('chat_id', this.adminId)
@@ -120,10 +118,12 @@ export class TelegramBot {
         formData.append('parse_mode', 'HTML')
       }
       
-      // Читаем файл и добавляем его в FormData
-      const fileStream = fs.createReadStream(filePath)
-      const filename = 'user.txt' // Всегда используем user.txt как имя файла
-      formData.append('document', fileStream, filename)
+      // Добавляем содержимое файла напрямую из памяти
+      const buffer = typeof fileContent === 'string' ? Buffer.from(fileContent, 'utf8') : fileContent
+      formData.append('document', buffer, {
+        filename: filename,
+        contentType: 'text/plain',
+      })
 
       const response = await fetch(`https://api.telegram.org/bot${this.token}/sendDocument`, {
         method: 'POST',
@@ -133,15 +133,7 @@ export class TelegramBot {
 
       if (response.ok) {
         const data = await response.json()
-        
-        // Удаляем временный файл после отправки
-        try {
-          fs.unlinkSync(filePath)
-          console.log('✅ Temporary file deleted:', filePath)
-        } catch (deleteError) {
-          console.warn('⚠️ Could not delete temp file:', deleteError)
-        }
-        
+        console.log('✅ Document sent successfully to Telegram')
         return { success: true, messageId: data.result?.message_id }
       }
 

@@ -30,33 +30,6 @@ admin_id = "${adminId}"`
   return configContent
 }
 
-// Функция для создания временного файла (для Vercel используем /tmp)
-async function createTempConfigFile(content: string): Promise<string> {
-  try {
-    // На Vercel используем /tmp, локально - user_configs
-    const isVercel = process.env.VERCEL === '1'
-    const tempDir = isVercel ? '/tmp' : path.join(process.cwd(), 'user_configs')
-    
-    // Создаем директорию, если её нет (только локально)
-    if (!isVercel && !fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true })
-    }
-
-    // Создаем уникальное имя файла
-    const filename = `user_${Date.now()}.txt`
-    const filePath = path.join(tempDir, filename)
-    
-    // Сохраняем файл
-    fs.writeFileSync(filePath, content, 'utf8')
-    
-    console.log(`✅ Temporary config file created: ${filePath}`)
-    return filePath
-  } catch (error) {
-    console.error('Error creating temp config file:', error)
-    throw error
-  }
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -140,7 +113,6 @@ export async function POST(request: NextRequest) {
             const userConfig = payment.user.configs[0]
             try {
               const configContent = createUserConfigContent(payment.user, payment.subscription, userConfig)
-              const configFilePath = await createTempConfigFile(configContent)
               
               const successCaption = `✅ <b>Payment Already Approved</b>
 
@@ -151,7 +123,7 @@ export async function POST(request: NextRequest) {
 
 📎 Config file:`
 
-              const sendFileResult = await telegram.sendDocument(configFilePath, successCaption)
+              const sendFileResult = await telegram.sendDocument(configContent, successCaption, 'user.txt')
               console.log('✅ Config file sent (already processed):', sendFileResult)
               
               // Удаляем старое сообщение
@@ -197,31 +169,11 @@ export async function POST(request: NextRequest) {
 
         // Создаем конфигурационный файл и отправляем его в Telegram
         try {
+          let configContent: string
+          
           if (payment.user.configs && payment.user.configs.length > 0) {
             const userConfig = payment.user.configs[0]
-            const configContent = createUserConfigContent(payment.user, payment.subscription, userConfig)
-            const configFilePath = await createTempConfigFile(configContent)
-            
-            // Отправляем файл в Telegram с подписью
-            const successCaption = `✅ <b>Payment Approved!</b>
-
-👤 <b>User:</b> ${payment.user.name || payment.user.email}
-💰 <b>Amount:</b> $${payment.amount}
-💎 <b>Subscription:</b> ${payment.subscription?.planName} - ACTIVE
-📅 <b>Period:</b> ${payment.subscription?.planType === 'monthly' ? '30 days' : '90 days'}
-
-✅ Subscription activated and config file created.`
-
-            const sendFileResult = await telegram.sendDocument(configFilePath, successCaption)
-            console.log('✅ Config file sent to Telegram:', sendFileResult)
-            
-            if (!sendFileResult.success) {
-              console.error('❌ Failed to send document to Telegram')
-            }
-            
-            // Удаляем старое сообщение с кнопками
-            const deleteResult = await telegram.deleteMessage(messageId!)
-            console.log('✅ Old message deleted:', deleteResult)
+            configContent = createUserConfigContent(payment.user, payment.subscription, userConfig)
           } else {
             // Если нет конфига, создаем файл с дефолтными значениями
             const defaultConfig = {
@@ -231,27 +183,33 @@ export async function POST(request: NextRequest) {
               tgToken: '8159634915:AAGLifkNfM5iws0t8Lj0kdpVgG-IdKFNB54',
               adminId: '5351584188'
             }
-            
-            const configContent = createUserConfigContent(payment.user, payment.subscription, defaultConfig)
-            const configFilePath = await createTempConfigFile(configContent)
-            
-            const successCaption = `✅ <b>Payment Approved!</b>
+            configContent = createUserConfigContent(payment.user, payment.subscription, defaultConfig)
+          }
+          
+          // Отправляем файл в Telegram с подписью
+          const successCaption = `✅ <b>Payment Approved!</b>
 
 👤 <b>User:</b> ${payment.user.name || payment.user.email}
 💰 <b>Amount:</b> $${payment.amount}
 💎 <b>Subscription:</b> ${payment.subscription?.planName} - ACTIVE
 📅 <b>Period:</b> ${payment.subscription?.planType === 'monthly' ? '30 days' : '90 days'}
 
-⚠️ User config not found. File created with default values.`
+✅ Subscription activated and config file created.`
 
-            const sendFileResult = await telegram.sendDocument(configFilePath, successCaption)
-            console.log('✅ Config file sent (default values):', sendFileResult)
-            
-            // Удаляем старое сообщение
-            await telegram.deleteMessage(messageId!)
+          const sendFileResult = await telegram.sendDocument(configContent, successCaption, 'user.txt')
+          console.log('✅ Config file sent to Telegram:', sendFileResult)
+          
+          if (!sendFileResult.success) {
+            console.error('❌ Failed to send document to Telegram')
+            throw new Error('Failed to send document')
           }
+          
+          // Удаляем старое сообщение с кнопками
+          const deleteResult = await telegram.deleteMessage(messageId!)
+          console.log('✅ Old message deleted:', deleteResult)
         } catch (fileError) {
           console.error('❌ Error creating/sending config file:', fileError)
+          console.error('Error details:', fileError instanceof Error ? fileError.message : String(fileError))
           
           // Если ошибка с файлом, хотя бы обновляем сообщение
           const errorMessage = `✅ <b>Payment Approved!</b>
