@@ -6,19 +6,18 @@ import path from 'path'
 
 export const dynamic = "force-dynamic"
 
-// Функция для создания конфигурационного файла
-async function createUserConfigFile(user: any, subscription: any, userConfig: any) {
-  try {
-    const exchange = userConfig?.exchange || 'bybit'
-    const exchangeName = exchange === 'binance' ? 'Бинанс' : 'Байбит'
-    
-    // Получаем tgToken из конфигурации (если есть)
-    // Если нет в конфиге, используем дефолтный токен
-    const tgToken = userConfig?.tgToken || '8159634915:AAGLifkNfM5iws0t8Lj0kdpVgG-IdKFNB54'
-    const adminId = userConfig?.adminId || '5351584188'
+// Функция для создания содержимого конфигурационного файла
+function createUserConfigContent(user: any, subscription: any, userConfig: any): string {
+  const exchange = userConfig?.exchange || 'bybit'
+  const exchangeName = exchange === 'binance' ? 'Бинанс' : 'Байбит'
+  
+  // Получаем tgToken из конфигурации (если есть)
+  // Если нет в конфиге, используем дефолтный токен
+  const tgToken = userConfig?.tgToken || '8159634915:AAGLifkNfM5iws0t8Lj0kdpVgG-IdKFNB54'
+  const adminId = userConfig?.adminId || '5351584188'
 
-    // Создаем содержимое файла в правильном формате
-    const configContent = `# апи ключи от биржи ${exchangeName}.
+  // Создаем содержимое файла в правильном формате
+  const configContent = `# апи ключи от биржи ${exchangeName}.
 api_key = '${userConfig?.apiKey || 'НЕ_УКАЗАН'}'
 api_secret = '${userConfig?.apiSecret || 'НЕ_УКАЗАН'}'
 
@@ -28,23 +27,32 @@ tg_token_main = "${tgToken}"
 # id аккаунта на который будет приходить сообщение от ботов 
 admin_id = "${adminId}"`
 
-    // Используем user.txt как имя файла
-    const filename = 'user.txt'
+  return configContent
+}
 
-    // Создаем директорию для конфигураций, если её нет
-    const configDir = path.join(process.cwd(), 'user_configs')
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true })
+// Функция для создания временного файла (для Vercel используем /tmp)
+async function createTempConfigFile(content: string): Promise<string> {
+  try {
+    // На Vercel используем /tmp, локально - user_configs
+    const isVercel = process.env.VERCEL === '1'
+    const tempDir = isVercel ? '/tmp' : path.join(process.cwd(), 'user_configs')
+    
+    // Создаем директорию, если её нет (только локально)
+    if (!isVercel && !fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true })
     }
 
+    // Создаем уникальное имя файла
+    const filename = `user_${Date.now()}.txt`
+    const filePath = path.join(tempDir, filename)
+    
     // Сохраняем файл
-    const filePath = path.join(configDir, filename)
-    fs.writeFileSync(filePath, configContent, 'utf8')
-
-    console.log(`✅ Configuration file created: ${filePath}`)
+    fs.writeFileSync(filePath, content, 'utf8')
+    
+    console.log(`✅ Temporary config file created: ${filePath}`)
     return filePath
   } catch (error) {
-    console.error('Error creating config file:', error)
+    console.error('Error creating temp config file:', error)
     throw error
   }
 }
@@ -131,7 +139,8 @@ export async function POST(request: NextRequest) {
           if (payment.user.configs && payment.user.configs.length > 0) {
             const userConfig = payment.user.configs[0]
             try {
-              const configFilePath = await createUserConfigFile(payment.user, payment.subscription, userConfig)
+              const configContent = createUserConfigContent(payment.user, payment.subscription, userConfig)
+              const configFilePath = await createTempConfigFile(configContent)
               
               const successCaption = `✅ <b>Payment Already Approved</b>
 
@@ -190,7 +199,8 @@ export async function POST(request: NextRequest) {
         try {
           if (payment.user.configs && payment.user.configs.length > 0) {
             const userConfig = payment.user.configs[0]
-            const configFilePath = await createUserConfigFile(payment.user, payment.subscription, userConfig)
+            const configContent = createUserConfigContent(payment.user, payment.subscription, userConfig)
+            const configFilePath = await createTempConfigFile(configContent)
             
             // Отправляем файл в Telegram с подписью
             const successCaption = `✅ <b>Payment Approved!</b>
@@ -222,7 +232,8 @@ export async function POST(request: NextRequest) {
               adminId: '5351584188'
             }
             
-            const configFilePath = await createUserConfigFile(payment.user, payment.subscription, defaultConfig)
+            const configContent = createUserConfigContent(payment.user, payment.subscription, defaultConfig)
+            const configFilePath = await createTempConfigFile(configContent)
             
             const successCaption = `✅ <b>Payment Approved!</b>
 

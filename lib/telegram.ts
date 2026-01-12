@@ -122,7 +122,7 @@ export class TelegramBot {
       
       // Читаем файл и добавляем его в FormData
       const fileStream = fs.createReadStream(filePath)
-      const filename = path.basename(filePath)
+      const filename = 'user.txt' // Всегда используем user.txt как имя файла
       formData.append('document', fileStream, filename)
 
       const response = await fetch(`https://api.telegram.org/bot${this.token}/sendDocument`, {
@@ -133,6 +133,15 @@ export class TelegramBot {
 
       if (response.ok) {
         const data = await response.json()
+        
+        // Удаляем временный файл после отправки
+        try {
+          fs.unlinkSync(filePath)
+          console.log('✅ Temporary file deleted:', filePath)
+        } catch (deleteError) {
+          console.warn('⚠️ Could not delete temp file:', deleteError)
+        }
+        
         return { success: true, messageId: data.result?.message_id }
       }
 
