@@ -123,15 +123,13 @@ export class TelegramBot {
       }
       
       // Добавляем содержимое файла напрямую из памяти
-      // Конвертируем строку в Buffer если нужно
       const buffer = typeof fileContent === 'string' ? Buffer.from(fileContent, 'utf8') : fileContent
       
       // Используем правильный формат для form-data
-      // В form-data нужно передать Buffer с опциями
+      // form-data принимает Buffer с опциями в виде объекта
       formData.append('document', buffer, {
         filename: filename,
         contentType: 'text/plain',
-        knownLength: buffer.length
       })
 
       console.log('📤 FormData created, sending to Telegram API...')
