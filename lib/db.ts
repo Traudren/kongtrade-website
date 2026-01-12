@@ -14,18 +14,9 @@ if (!process.env.DATABASE_URL) {
 if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
   const dbUrl = process.env.DATABASE_URL
   // Supabase Connection Pooling использует порт 6543
-  if (dbUrl) {
-    const hasPooler = dbUrl.includes('pooler') || dbUrl.includes(':6543')
-    if (!hasPooler) {
-      console.error('❌ CRITICAL: DATABASE_URL is NOT using Connection Pooling!')
-      console.error('Current URL contains:', dbUrl.includes(':5432') ? 'port 5432 (direct connection)' : 'unknown format')
-      console.error('For Vercel/Supabase, you MUST use Connection Pooling URL with port 6543')
-      console.error('Example: postgresql://...@aws-0-eu-north-1.pooler.supabase.com:6543/postgres')
-    } else {
-      console.log('✅ DATABASE_URL is using Connection Pooling (correct for Vercel)')
-    }
-  } else {
-    console.error('❌ DATABASE_URL is not set in production!')
+  if (dbUrl && !dbUrl.includes(':6543') && !dbUrl.includes('pooler')) {
+    console.warn('⚠️ WARNING: DATABASE_URL might not be using Connection Pooling (port 6543). This can cause connection issues on Vercel.')
+    console.warn('For Supabase, use Connection Pooling URL: postgresql://...@pooler.supabase.com:6543/postgres')
   }
 }
 

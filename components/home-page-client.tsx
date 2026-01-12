@@ -57,7 +57,7 @@ export function HomePageClient() {
   const handlePlanSelect = useCallback((plan: { name: string; type: string; price: number; telegramChannel?: boolean }) => {
     // Only set plan if price is greater than 0
     if (plan.price > 0) {
-      setSelectedPlan(plan)
+    setSelectedPlan(plan)
     } else {
       setSelectedPlan({ name: '', type: 'monthly', price: 0 })
     }

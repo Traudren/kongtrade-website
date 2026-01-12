@@ -9,31 +9,16 @@ export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('📥 POST /api/payments - Request received')
-    
     const session = await getServerSession(authOptions)
-    console.log('👤 Session exists:', !!session)
-    console.log('👤 User ID:', session?.user?.id)
     
     if (!session?.user) {
-      console.error('❌ Unauthorized - no session')
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const body = await request.json()
-    console.log('📦 Request body:', { 
-      amount: body.amount, 
-      paymentMethod: body.paymentMethod, 
-      planName: body.planName, 
-      planType: body.planType,
-      hasTxid: !!body.txid,
-      hasWalletAddress: !!body.walletAddress
-    })
-    
-    const { amount, paymentMethod, walletAddress, txid, planName, planType } = body
+    const { amount, paymentMethod, walletAddress, txid, planName, planType } = await request.json()
 
     if (!amount || !paymentMethod || !walletAddress || !txid) {
       return NextResponse.json(
@@ -106,7 +91,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment record
-    console.log('💾 Creating payment record...')
     const payment = await prisma.payment.create({
       data: {
         userId: session.user.id,
@@ -126,49 +110,18 @@ export async function POST(request: NextRequest) {
         }
       }
     })
-    console.log('✅ Payment created:', payment.id)
-    console.log('📊 Payment details:', {
-      userId: payment.userId,
-      subscriptionId: payment.subscriptionId,
-      amount: payment.amount,
-      hasSubscription: !!payment.subscription,
-      hasUserConfigs: !!payment.user.configs,
-      configsCount: payment.user.configs?.length || 0
-    })
 
     // Отправляем уведомление в Telegram с кнопками подтверждения/отмены
-    console.log('📨 ========== TELEGRAM NOTIFICATION START ==========')
     try {
-      console.log('📨 Attempting to send Telegram notification...')
-      console.log('Payment ID:', payment.id)
-      console.log('Payment subscription exists:', !!payment.subscription)
-      console.log('Payment subscription:', payment.subscription ? {
-        id: payment.subscription.id,
-        planName: payment.subscription.planName,
-        planType: payment.subscription.planType
-      } : 'null')
-      console.log('User configs exists:', !!payment.user.configs)
-      console.log('User configs length:', payment.user.configs?.length || 0)
-      console.log('User configs:', payment.user.configs ? payment.user.configs.map((c: any) => ({
-        id: c.id,
-        exchange: c.exchange,
-        hasApiKey: !!c.apiKey,
-        hasApiSecret: !!c.apiSecret
-      })) : 'null')
-      
       if (payment.subscription && payment.user.configs && payment.user.configs.length > 0) {
-        console.log('✅ Conditions met - will send Telegram notification')
         const userConfig = payment.user.configs[0] // Берем первую конфигурацию
-        console.log('✅ User config found, exchange:', userConfig.exchange)
         
         // Выбираем телеграм-бота в зависимости от paymentMethod (на какой кошелек оплатили)
         // paymentMethod может быть 'binance' или 'bybit'
         const telegramBotExchange = paymentMethod.toLowerCase() === 'binance' ? 'binance' : 'bybit'
-        console.log('🤖 Using Telegram bot for exchange:', telegramBotExchange)
         const telegram = new TelegramBot(telegramBotExchange)
         
         const result = await telegram.notifyNewPayment(payment.user, payment.subscription, payment, userConfig)
-        console.log('📥 Telegram notification result:', result)
         
         // Сохраняем ID сообщения в базе данных
         if (result.success && result.messageId) {
@@ -176,33 +129,12 @@ export async function POST(request: NextRequest) {
             where: { id: payment.id },
             data: { telegramMessageId: result.messageId.toString() }
           })
-          console.log('✅ Message ID saved to database')
-        } else {
-          console.error('❌ Failed to send Telegram notification:', result)
-        }
-      } else {
-        console.warn('⚠️ Cannot send Telegram notification: missing subscription or user config')
-        console.warn('Subscription exists:', !!payment.subscription)
-        console.warn('User configs exists:', !!payment.user.configs)
-        console.warn('User configs length:', payment.user.configs?.length || 0)
-        if (!payment.subscription) {
-          console.warn('❌ REASON: No subscription found')
-        }
-        if (!payment.user.configs || payment.user.configs.length === 0) {
-          console.warn('❌ REASON: No user configs found')
         }
       }
     } catch (telegramError) {
-      console.error('❌ Telegram notification error:', telegramError)
-      if (telegramError instanceof Error) {
-        console.error('Error message:', telegramError.message)
-        console.error('Error stack:', telegramError.stack)
-      } else {
-        console.error('Error details:', String(telegramError))
-      }
+      console.error('Telegram notification error:', telegramError)
       // Не прерываем выполнение, если уведомление не отправилось
     }
-    console.log('📨 ========== TELEGRAM NOTIFICATION END ==========')
 
     return NextResponse.json(
       { message: 'Payment submitted successfully', paymentId: payment.id },
