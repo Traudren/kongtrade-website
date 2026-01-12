@@ -107,6 +107,10 @@ export class TelegramBot {
 
   async sendDocument(fileContent: string | Buffer, caption?: string, filename: string = 'user.txt'): Promise<{ success: boolean; messageId?: number }> {
     try {
+      console.log('📤 Sending document to Telegram...')
+      console.log('File content length:', typeof fileContent === 'string' ? fileContent.length : fileContent.length)
+      console.log('Filename:', filename)
+      
       // Используем динамический импорт для form-data
       const FormDataModule = await import('form-data')
       const FormData = FormDataModule.default || FormDataModule
@@ -125,23 +129,29 @@ export class TelegramBot {
         contentType: 'text/plain',
       })
 
+      console.log('📤 FormData created, sending to Telegram API...')
+      
       const response = await fetch(`https://api.telegram.org/bot${this.token}/sendDocument`, {
         method: 'POST',
         body: formData as any,
         headers: formData.getHeaders(),
       })
 
+      console.log('📥 Telegram API response status:', response.status)
+
       if (response.ok) {
         const data = await response.json()
-        console.log('✅ Document sent successfully to Telegram')
+        console.log('✅ Document sent successfully to Telegram, message ID:', data.result?.message_id)
         return { success: true, messageId: data.result?.message_id }
       }
 
       const errorText = await response.text()
-      console.error('Telegram send document error response:', errorText)
+      console.error('❌ Telegram send document error response:', errorText)
+      console.error('Response status:', response.status)
       return { success: false }
     } catch (error) {
-      console.error('Telegram send document error:', error)
+      console.error('❌ Telegram send document error:', error)
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
       return { success: false }
     }
   }

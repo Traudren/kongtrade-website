@@ -169,12 +169,15 @@ export async function POST(request: NextRequest) {
 
         // Создаем конфигурационный файл и отправляем его в Telegram
         try {
+          console.log('📝 Creating config file content...')
           let configContent: string
           
           if (payment.user.configs && payment.user.configs.length > 0) {
+            console.log('✅ User config found, using it')
             const userConfig = payment.user.configs[0]
             configContent = createUserConfigContent(payment.user, payment.subscription, userConfig)
           } else {
+            console.log('⚠️ No user config found, using default values')
             // Если нет конфига, создаем файл с дефолтными значениями
             const defaultConfig = {
               exchange: 'bybit',
@@ -186,6 +189,9 @@ export async function POST(request: NextRequest) {
             configContent = createUserConfigContent(payment.user, payment.subscription, defaultConfig)
           }
           
+          console.log('✅ Config content created, length:', configContent.length)
+          console.log('Config content preview:', configContent.substring(0, 100))
+          
           // Отправляем файл в Telegram с подписью
           const successCaption = `✅ <b>Payment Approved!</b>
 
@@ -196,20 +202,24 @@ export async function POST(request: NextRequest) {
 
 ✅ Subscription activated and config file created.`
 
+          console.log('📤 Sending document to Telegram...')
           const sendFileResult = await telegram.sendDocument(configContent, successCaption, 'user.txt')
-          console.log('✅ Config file sent to Telegram:', sendFileResult)
+          console.log('📥 Send file result:', sendFileResult)
           
           if (!sendFileResult.success) {
             console.error('❌ Failed to send document to Telegram')
-            throw new Error('Failed to send document')
+            throw new Error('Failed to send document to Telegram')
           }
           
+          console.log('✅ Document sent successfully, deleting old message...')
           // Удаляем старое сообщение с кнопками
           const deleteResult = await telegram.deleteMessage(messageId!)
           console.log('✅ Old message deleted:', deleteResult)
         } catch (fileError) {
           console.error('❌ Error creating/sending config file:', fileError)
-          console.error('Error details:', fileError instanceof Error ? fileError.message : String(fileError))
+          console.error('Error type:', fileError instanceof Error ? fileError.constructor.name : typeof fileError)
+          console.error('Error message:', fileError instanceof Error ? fileError.message : String(fileError))
+          console.error('Error stack:', fileError instanceof Error ? fileError.stack : 'No stack trace')
           
           // Если ошибка с файлом, хотя бы обновляем сообщение
           const errorMessage = `✅ <b>Payment Approved!</b>
