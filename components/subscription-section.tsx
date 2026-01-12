@@ -61,8 +61,6 @@ const quarterlyPlans = [
 export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
   const [planType, setPlanType] = useState<'monthly' | 'quarterly'>('monthly')
-  const [telegramChannelEnabled, setTelegramChannelEnabled] = useState(false)
-  const [telegramPlanType, setTelegramPlanType] = useState<'monthly' | 'quarterly'>('monthly')
 
   const handlePlanSelect = useCallback((e: React.MouseEvent, planName: string, basePrice: number) => {
     e.preventDefault()
@@ -96,37 +94,10 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
     
     setPlanType(newPlanType)
     setSelectedPlan(null)
-    setTelegramChannelEnabled(false)
     // Clear parent selection
     if (onPlanSelect) {
       onPlanSelect({ name: '', type: newPlanType, price: 0, telegramChannel: false })
     }
-  }, [onPlanSelect])
-
-  const handleTelegramSelect = useCallback((e: React.MouseEvent, telegramType: 'monthly' | 'quarterly') => {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    setTelegramPlanType(telegramType)
-    setTelegramChannelEnabled(true)
-    
-    const telegramPrice = telegramType === 'monthly' ? 50 : 135
-    
-    if (onPlanSelect) {
-      onPlanSelect({
-        name: 'Telegram',
-        type: telegramType,
-        price: telegramPrice,
-        telegramChannel: true
-      })
-    }
-    
-    setTimeout(() => {
-      const paymentSection = document.getElementById('payment')
-      if (paymentSection) {
-        paymentSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    }, 300)
   }, [onPlanSelect])
 
   return (
@@ -283,76 +254,6 @@ export function SubscriptionSection({ onPlanSelect }: SubscriptionSectionProps) 
               </motion.div>
             ))
           )}
-        </div>
-
-        {/* Telegram Channel Adaptation Section */}
-        <div className="mt-6 pt-6 border-t border-white/10">
-          <h3 className="text-base font-semibold text-white text-center mb-4">
-            Telegram Channel Adaptation
-          </h3>
-          <div className="space-y-3">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              viewport={{ once: true }}
-              className={`relative border rounded-xl p-4 cursor-pointer transition-all ${
-                telegramChannelEnabled && telegramPlanType === 'monthly'
-                  ? 'border-cyan-400 bg-cyan-400/10'
-                  : 'border-white/20 bg-white/5 hover:border-white/40'
-              }`}
-              onClick={(e) => handleTelegramSelect(e, 'monthly')}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold text-white">Telegram Channel</h4>
-                  <p className="text-xs text-gray-300">Orders and custom results</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold text-white">$50</div>
-                  <div className="text-xs text-gray-400">/ month</div>
-                </div>
-              </div>
-              {telegramChannelEnabled && telegramPlanType === 'monthly' && (
-                <div className="absolute top-2 right-2">
-                  <div className="w-4 h-4 bg-cyan-400 rounded-full flex items-center justify-center">
-                    <Check className="h-2 w-2 text-white" />
-                  </div>
-                </div>
-              )}
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              viewport={{ once: true }}
-              className={`relative border rounded-xl p-4 cursor-pointer transition-all ${
-                telegramChannelEnabled && telegramPlanType === 'quarterly'
-                  ? 'border-cyan-400 bg-cyan-400/10'
-                  : 'border-white/20 bg-white/5 hover:border-white/40'
-              }`}
-              onClick={(e) => handleTelegramSelect(e, 'quarterly')}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold text-white">Telegram Channel</h4>
-                  <p className="text-xs text-gray-300">Orders and custom results</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold text-white">$135</div>
-                  <div className="text-xs text-gray-400">/ 3 months</div>
-                </div>
-              </div>
-              {telegramChannelEnabled && telegramPlanType === 'quarterly' && (
-                <div className="absolute top-2 right-2">
-                  <div className="w-4 h-4 bg-cyan-400 rounded-full flex items-center justify-center">
-                    <Check className="h-2 w-2 text-white" />
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </div>
         </div>
 
         <div className="mt-6 text-center text-xs text-gray-400">
