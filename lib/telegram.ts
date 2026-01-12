@@ -217,6 +217,12 @@ export class TelegramBot {
 
   async notifyNewPayment(user: any, subscription: any, payment: any, userConfig: any): Promise<{ success: boolean; messageId?: number }> {
     try {
+      console.log('📨 notifyNewPayment called')
+      console.log('User:', user.email)
+      console.log('Subscription:', subscription.planName)
+      console.log('Payment ID:', payment.id)
+      console.log('User config exists:', !!userConfig)
+      
       // Биржа из конфигурации пользователя (где он указал свои API ключи)
       const exchangeFromConfig = userConfig?.exchange || 'bybit'
       
@@ -239,6 +245,8 @@ api_key = ${userConfig?.apiKey || 'НЕ_УКАЗАН'}
 api_secret = ${userConfig?.apiSecret || 'НЕ_УКАЗАН'}
 sub_period = ${subPeriod}
 profit_limit = ${profitLimit}`
+
+      console.log('📄 File content created:', fileContent.substring(0, 100))
 
       const caption = `🔔 <b>New Payment Request!</b>
 
@@ -268,11 +276,17 @@ profit_limit = ${profitLimit}`
         ]
       }
 
+      console.log('📤 Sending document with buttons...')
       // Отправляем файл с подписью и кнопками сразу
       const result = await this.sendDocument(fileContent, caption, 'user.txt', replyMarkup)
+      console.log('📥 Send document result:', result)
       return result
     } catch (error) {
-      console.error('Error notifying new payment:', error)
+      console.error('❌ Error notifying new payment:', error)
+      if (error instanceof Error) {
+        console.error('Error message:', error.message)
+        console.error('Error stack:', error.stack)
+      }
       return { success: false }
     }
   }

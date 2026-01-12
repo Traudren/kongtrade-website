@@ -113,15 +113,23 @@ export async function POST(request: NextRequest) {
 
     // Отправляем уведомление в Telegram с кнопками подтверждения/отмены
     try {
+      console.log('📨 Attempting to send Telegram notification...')
+      console.log('Payment subscription exists:', !!payment.subscription)
+      console.log('User configs exists:', !!payment.user.configs)
+      console.log('User configs length:', payment.user.configs?.length || 0)
+      
       if (payment.subscription && payment.user.configs && payment.user.configs.length > 0) {
         const userConfig = payment.user.configs[0] // Берем первую конфигурацию
+        console.log('✅ User config found, exchange:', userConfig.exchange)
         
         // Выбираем телеграм-бота в зависимости от paymentMethod (на какой кошелек оплатили)
         // paymentMethod может быть 'binance' или 'bybit'
         const telegramBotExchange = paymentMethod.toLowerCase() === 'binance' ? 'binance' : 'bybit'
+        console.log('🤖 Using Telegram bot for exchange:', telegramBotExchange)
         const telegram = new TelegramBot(telegramBotExchange)
         
         const result = await telegram.notifyNewPayment(payment.user, payment.subscription, payment, userConfig)
+        console.log('📥 Telegram notification result:', result)
         
         // Сохраняем ID сообщения в базе данных
         if (result.success && result.messageId) {
@@ -129,10 +137,21 @@ export async function POST(request: NextRequest) {
             where: { id: payment.id },
             data: { telegramMessageId: result.messageId.toString() }
           })
+          console.log('✅ Message ID saved to database')
+        } else {
+          console.error('❌ Failed to send Telegram notification:', result)
         }
+      } else {
+        console.warn('⚠️ Cannot send Telegram notification: missing subscription or user config')
+        console.warn('Subscription:', !!payment.subscription)
+        console.warn('User configs:', payment.user.configs?.length || 0)
       }
     } catch (telegramError) {
-      console.error('Telegram notification error:', telegramError)
+      console.error('❌ Telegram notification error:', telegramError)
+      if (telegramError instanceof Error) {
+        console.error('Error message:', telegramError.message)
+        console.error('Error stack:', telegramError.stack)
+      }
       // Не прерываем выполнение, если уведомление не отправилось
     }
 
