@@ -10,31 +10,26 @@ export const dynamic = "force-dynamic"
 async function createUserConfigFile(user: any, subscription: any, userConfig: any) {
   try {
     const exchange = userConfig?.exchange || 'bybit'
+    const exchangeName = exchange === 'binance' ? 'Бинанс' : 'Байбит'
     
-    // Определяем profit_limit на основе плана
-    let profitLimit = ''
-    if (subscription.planName === 'Basic') {
-      profitLimit = '25'
-    } else if (subscription.planName === 'Professional') {
-      profitLimit = '40'
-    } else if (subscription.planName === 'Premium') {
-      profitLimit = 'unlim'
-    } else {
-      profitLimit = '25'
-    }
+    // Получаем tgToken из конфигурации (если есть)
+    // Если нет в конфиге, используем дефолтный токен
+    const tgToken = userConfig?.tgToken || '8159634915:AAGLifkNfM5iws0t8Lj0kdpVgG-IdKFNB54'
+    const adminId = userConfig?.adminId || '5351584188'
 
-    // Определяем период подписки
-    const subPeriod = subscription.planType === 'monthly' ? '30' : '90'
+    // Создаем содержимое файла в правильном формате
+    const configContent = `# апи ключи от биржи ${exchangeName}.
+api_key = '${userConfig?.apiKey || 'НЕ_УКАЗАН'}'
+api_secret = '${userConfig?.apiSecret || 'НЕ_УКАЗАН'}'
 
-    // Создаем содержимое файла
-    const configContent = `user_name = '${user.name || ''}'
-api_key = '${userConfig?.apiKey || ''}'
-api_secret = '${userConfig?.apiSecret || ''}'
-profit_limit = '${profitLimit}'
-sub_period = '${subPeriod}'`
+# Токены телеграмм бота, в которых будут сигналы.
+tg_token_main = "${tgToken}"
 
-    // Определяем имя файла в зависимости от биржи
-    const filename = exchange === 'binance' ? 'user_binance_config.txt' : 'user_bybit_config.txt'
+# id аккаунта на который будет приходить сообщение от ботов 
+admin_id = "${adminId}"`
+
+    // Используем user.txt как имя файла
+    const filename = 'user.txt'
 
     // Создаем директорию для конфигураций, если её нет
     const configDir = path.join(process.cwd(), 'user_configs')
@@ -162,12 +157,6 @@ export async function POST(request: NextRequest) {
             }
           })
 
-          // Создаем конфигурационный файл
-          if (payment.user.configs && payment.user.configs.length > 0) {
-            const userConfig = payment.user.configs[0]
-            await createUserConfigFile(payment.user, payment.subscription, userConfig)
-          }
-
           // Сбрасываем счетчик попыток при успешной оплате
           await prisma.user.update({
             where: { id: payment.userId },
@@ -175,8 +164,14 @@ export async function POST(request: NextRequest) {
           })
         }
 
-        // Обновляем сообщение в Telegram
-        const successMessage = `✅ <b>Payment Approved!</b>
+        // Создаем конфигурационный файл и отправляем его в Telegram
+        let configFilePath: string | null = null
+        if (payment.user.configs && payment.user.configs.length > 0) {
+          const userConfig = payment.user.configs[0]
+          configFilePath = await createUserConfigFile(payment.user, payment.subscription, userConfig)
+          
+          // Отправляем файл в Telegram с подписью
+          const successCaption = `✅ <b>Payment Approved!</b>
 
 👤 <b>User:</b> ${payment.user.name || payment.user.email}
 💰 <b>Amount:</b> $${payment.amount}
@@ -185,8 +180,26 @@ export async function POST(request: NextRequest) {
 
 ✅ Subscription activated and config file created.`
 
-        const editResult = await telegram.editMessageText(messageId!, successMessage, undefined)
-        console.log('✅ Message edited:', editResult)
+          const sendFileResult = await telegram.sendDocument(configFilePath, successCaption)
+          console.log('✅ Config file sent to Telegram:', sendFileResult)
+          
+          // Удаляем старое сообщение с кнопками
+          await telegram.deleteMessage(messageId!)
+          console.log('✅ Old message deleted')
+        } else {
+          // Если нет конфига, просто обновляем сообщение
+          const successMessage = `✅ <b>Payment Approved!</b>
+
+👤 <b>User:</b> ${payment.user.name || payment.user.email}
+💰 <b>Amount:</b> $${payment.amount}
+💎 <b>Subscription:</b> ${payment.subscription?.planName} - ACTIVE
+📅 <b>Period:</b> ${payment.subscription?.planType === 'monthly' ? '30 days' : '90 days'}
+
+⚠️ User config not found.`
+
+          const editResult = await telegram.editMessageText(messageId!, successMessage, undefined)
+          console.log('✅ Message edited:', editResult)
+        }
 
         return NextResponse.json({ ok: true })
 
@@ -262,8 +275,9 @@ ${blockedUntil ? `🚫 <b>Blocked until:</b> ${blockedUntil.toLocaleString()}` :
 
 ❌ Payment rejected. User can try again.`
 
-          const editResult = await telegram.editMessageText(messageId!, rejectMessage, undefined)
-          console.log('✅ Reject message edited:', editResult)
+          const editResult =           // Удаляем сообщение при отклонении
+          const deleteResult = await telegram.deleteMessage(messageId!)
+          console.log('✅ Message deleted after rejection:', deleteResult)
         }
 
         return NextResponse.json({ ok: true })

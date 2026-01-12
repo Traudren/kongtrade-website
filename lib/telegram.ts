@@ -105,25 +105,62 @@ export class TelegramBot {
     }
   }
 
-  async sendDocument(text: string, filename: string, fileContent: string): Promise<boolean> {
+  async sendDocument(filePath: string, caption?: string): Promise<{ success: boolean; messageId?: number }> {
     try {
+      // Используем динамический импорт для form-data
+      const FormDataModule = await import('form-data')
+      const FormData = FormDataModule.default || FormDataModule
+      const fs = require('fs')
+      const path = require('path')
+      
       const formData = new FormData()
       formData.append('chat_id', this.adminId)
-      formData.append('caption', text)
-      formData.append('parse_mode', 'HTML')
+      if (caption) {
+        formData.append('caption', caption)
+        formData.append('parse_mode', 'HTML')
+      }
       
-      // Создаем файл Blob
-      const blob = new Blob([fileContent], { type: 'text/plain' })
-      formData.append('document', blob, filename)
+      // Читаем файл и добавляем его в FormData
+      const fileStream = fs.createReadStream(filePath)
+      const filename = path.basename(filePath)
+      formData.append('document', fileStream, filename)
 
       const response = await fetch(`https://api.telegram.org/bot${this.token}/sendDocument`, {
         method: 'POST',
-        body: formData,
+        body: formData as any,
+        headers: formData.getHeaders(),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        return { success: true, messageId: data.result?.message_id }
+      }
+
+      const errorText = await response.text()
+      console.error('Telegram send document error response:', errorText)
+      return { success: false }
+    } catch (error) {
+      console.error('Telegram send document error:', error)
+      return { success: false }
+    }
+  }
+
+  async deleteMessage(messageId: number): Promise<boolean> {
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${this.token}/deleteMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: this.adminId,
+          message_id: messageId,
+        }),
       })
 
       return response.ok
     } catch (error) {
-      console.error('Telegram send document error:', error)
+      console.error('Telegram delete message error:', error)
       return false
     }
   }
