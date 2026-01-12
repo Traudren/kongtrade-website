@@ -275,7 +275,7 @@ ${blockedUntil ? `🚫 <b>Blocked until:</b> ${blockedUntil.toLocaleString()}` :
 
 ❌ Payment rejected. User can try again.`
 
-          const editResult =           // Удаляем сообщение при отклонении
+          // Удаляем сообщение при отклонении
           const deleteResult = await telegram.deleteMessage(messageId!)
           console.log('✅ Message deleted after rejection:', deleteResult)
         }
