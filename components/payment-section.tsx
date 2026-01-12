@@ -148,12 +148,25 @@ export function PaymentSection({ selectedPlan }: PaymentSectionProps) {
     e.preventDefault()
     e.stopPropagation()
     
+    console.log('💳 Payment form submitted')
+    console.log('Session exists:', !!session?.user)
+    console.log('Form data:', {
+      amount: selectedAmount,
+      paymentMethod,
+      walletAddress,
+      txid: txid.substring(0, 10) + '...',
+      planName: selectedPlan?.name,
+      planType: selectedPlan?.type,
+    })
+    
     if (!session?.user) {
+      console.error('❌ No session, redirecting to login')
       router.push('/login')
       return
     }
 
     if (hasPendingPayment) {
+      console.warn('⚠️ Has pending payment')
       toast({
         variant: 'destructive',
         title: 'Payment Pending',
@@ -163,6 +176,7 @@ export function PaymentSection({ selectedPlan }: PaymentSectionProps) {
     }
 
     if (!txid.trim() || !paymentMethod || !selectedPlan?.price) {
+      console.error('❌ Missing required fields')
       toast({
         variant: 'destructive',
         title: 'Missing Fields',
@@ -172,6 +186,7 @@ export function PaymentSection({ selectedPlan }: PaymentSectionProps) {
     }
     
     setSubmitting(true)
+    console.log('📤 Sending POST request to /api/payments...')
     
     try {
       const response = await fetch('/api/payments', {
@@ -188,8 +203,12 @@ export function PaymentSection({ selectedPlan }: PaymentSectionProps) {
           planType: selectedPlan?.type,
         }),
       })
+      
+      console.log('📥 Response received:', response.status, response.statusText)
 
       if (response.ok) {
+        const data = await response.json()
+        console.log('✅ Payment submitted successfully:', data)
         toast({
           variant: 'success',
           title: 'Payment Submitted',
@@ -200,6 +219,7 @@ export function PaymentSection({ selectedPlan }: PaymentSectionProps) {
         // Don't redirect, just show success
       } else {
         const error = await response.json()
+        console.error('❌ Payment submission failed:', response.status, error)
         if (response.status === 409) {
           // Conflict - есть pending платеж
           setHasPendingPayment(true)
