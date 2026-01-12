@@ -137,13 +137,27 @@ export async function POST(request: NextRequest) {
     })
 
     // Отправляем уведомление в Telegram с кнопками подтверждения/отмены
+    console.log('📨 ========== TELEGRAM NOTIFICATION START ==========')
     try {
       console.log('📨 Attempting to send Telegram notification...')
+      console.log('Payment ID:', payment.id)
       console.log('Payment subscription exists:', !!payment.subscription)
+      console.log('Payment subscription:', payment.subscription ? {
+        id: payment.subscription.id,
+        planName: payment.subscription.planName,
+        planType: payment.subscription.planType
+      } : 'null')
       console.log('User configs exists:', !!payment.user.configs)
       console.log('User configs length:', payment.user.configs?.length || 0)
+      console.log('User configs:', payment.user.configs ? payment.user.configs.map((c: any) => ({
+        id: c.id,
+        exchange: c.exchange,
+        hasApiKey: !!c.apiKey,
+        hasApiSecret: !!c.apiSecret
+      })) : 'null')
       
       if (payment.subscription && payment.user.configs && payment.user.configs.length > 0) {
+        console.log('✅ Conditions met - will send Telegram notification')
         const userConfig = payment.user.configs[0] // Берем первую конфигурацию
         console.log('✅ User config found, exchange:', userConfig.exchange)
         
@@ -168,17 +182,27 @@ export async function POST(request: NextRequest) {
         }
       } else {
         console.warn('⚠️ Cannot send Telegram notification: missing subscription or user config')
-        console.warn('Subscription:', !!payment.subscription)
-        console.warn('User configs:', payment.user.configs?.length || 0)
+        console.warn('Subscription exists:', !!payment.subscription)
+        console.warn('User configs exists:', !!payment.user.configs)
+        console.warn('User configs length:', payment.user.configs?.length || 0)
+        if (!payment.subscription) {
+          console.warn('❌ REASON: No subscription found')
+        }
+        if (!payment.user.configs || payment.user.configs.length === 0) {
+          console.warn('❌ REASON: No user configs found')
+        }
       }
     } catch (telegramError) {
       console.error('❌ Telegram notification error:', telegramError)
       if (telegramError instanceof Error) {
         console.error('Error message:', telegramError.message)
         console.error('Error stack:', telegramError.stack)
+      } else {
+        console.error('Error details:', String(telegramError))
       }
       // Не прерываем выполнение, если уведомление не отправилось
     }
+    console.log('📨 ========== TELEGRAM NOTIFICATION END ==========')
 
     return NextResponse.json(
       { message: 'Payment submitted successfully', paymentId: payment.id },
