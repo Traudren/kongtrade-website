@@ -60,19 +60,27 @@ export async function POST(request: NextRequest) {
     
     // Логируем входящий запрос для отладки
     console.log('📥 Telegram webhook received:', JSON.stringify(body, null, 2))
-
+    console.log('📥 Webhook body type:', typeof body)
+    console.log('📥 Body keys:', Object.keys(body))
+    
+    // Telegram может отправлять update объект напрямую
+    // Проверяем оба варианта: body.callback_query и body.update?.callback_query
+    const callbackQuery = body.callback_query || body.update?.callback_query || body.message?.callback_query
+    
     // Обработка callback query от inline кнопок
-    if (body.callback_query) {
-      const callbackQuery = body.callback_query
+    if (callbackQuery) {
       const callbackData = callbackQuery.data
       const messageId = callbackQuery.message?.message_id
       const chatId = callbackQuery.message?.chat?.id
+      const callbackQueryId = callbackQuery.id
 
       console.log('🔘 Callback query received:', {
+        callbackQueryId,
         callbackData,
         messageId,
         chatId,
-        from: callbackQuery.from
+        from: callbackQuery.from,
+        message: callbackQuery.message
       })
 
       // Парсим paymentId из callback_data для определения бота
@@ -97,9 +105,14 @@ export async function POST(request: NextRequest) {
 
       const telegram = new TelegramBot(botExchange)
 
-      // Отвечаем на callback query
-      const answerResult = await telegram.answerCallbackQuery(callbackQuery.id, 'Processing...')
-      console.log('✅ Callback query answered:', answerResult)
+      // Отвечаем на callback query СРАЗУ, чтобы убрать индикатор загрузки
+      try {
+        const answerResult = await telegram.answerCallbackQuery(callbackQueryId, 'Processing...')
+        console.log('✅ Callback query answered:', answerResult)
+      } catch (answerError) {
+        console.error('❌ Error answering callback query:', answerError)
+        // Продолжаем выполнение даже если не удалось ответить
+      }
 
       // Парсим callback_data
       if (callbackData.startsWith('approve_payment_') && paymentId) {
@@ -270,8 +283,16 @@ ${blockedUntil ? `🚫 <b>Blocked until:</b> ${blockedUntil.toLocaleString()}` :
       }
     }
 
-    // Если это не callback_query, просто возвращаем ok
-    console.log('ℹ️ Non-callback query received, ignoring')
+    // Если это не callback_query, логируем что получили
+    console.log('ℹ️ Non-callback query received')
+    console.log('ℹ️ Body structure:', {
+      hasCallbackQuery: !!body.callback_query,
+      hasUpdate: !!body.update,
+      hasMessage: !!body.message,
+      keys: Object.keys(body)
+    })
+    
+    // Всегда возвращаем ok, чтобы Telegram знал, что запрос обработан
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error('❌ Telegram webhook error:', error)
