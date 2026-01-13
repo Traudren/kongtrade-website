@@ -80,7 +80,7 @@ export default function RootLayout({
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" type="image/png" href="/favicon.ico" />
       </head>
-      <body className={`${inter.className} soft-tech-bg light-particles`}>
+      <body className={`${inter.className} soft-tech-bg`}>
         <Providers>
           <StructuredData />
           {children}

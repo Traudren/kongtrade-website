@@ -101,6 +101,8 @@ export function HeroSection() {
                 alt="KongTrade King Kong Trading Platform"
                 fill
                 className="object-cover rounded-lg"
+                priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-lg" />
             </div>

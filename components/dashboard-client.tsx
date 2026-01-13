@@ -1,8 +1,9 @@
 
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useSession, signOut } from 'next-auth/react'
+import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -63,10 +64,6 @@ export function DashboardClient() {
   const { data: session } = useSession()
   const { toast } = useToast()
   const router = useRouter()
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
-  const [payments, setPayments] = useState<Payment[]>([])
-  const [configs, setConfigs] = useState<TradingConfig[]>([])
-  const [loading, setLoading] = useState(true)
   const [showApiSecret, setShowApiSecret] = useState(false)
   
   // Form states
@@ -74,44 +71,58 @@ export function DashboardClient() {
   const [apiKey, setApiKey] = useState('')
   const [apiSecret, setApiSecret] = useState('')
 
+  // Fetcher function for SWR
+  const fetcher = async (url: string) => {
+    const res = await fetch(url, { cache: 'no-store' })
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ error: 'An error occurred' }))
+      throw new Error(error.error || 'Failed to fetch data')
+    }
+    return res.json()
+  }
+
+  // SWR hooks with caching
+  const { data: subsData, error: subsError, mutate: mutateSubs } = useSWR<{ subscriptions: Subscription[] }>(
+    '/api/subscriptions',
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      dedupingInterval: 30000, // 30 seconds cache
+      errorRetryCount: 3
+    }
+  )
+
+  const { data: paymentsData, error: paymentsError, mutate: mutatePayments } = useSWR<{ payments: Payment[] }>(
+    '/api/payments',
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      dedupingInterval: 30000,
+      errorRetryCount: 3
+    }
+  )
+
+  const { data: configsData, error: configsError, mutate: mutateConfigs } = useSWR<{ configs: TradingConfig[] }>(
+    '/api/trading-config',
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      dedupingInterval: 30000,
+      errorRetryCount: 3
+    }
+  )
+
+  const subscriptions = subsData?.subscriptions || []
+  const payments = paymentsData?.payments || []
+  const configs = configsData?.configs || []
+  const loading = (!subsData && !subsError) || (!paymentsData && !paymentsError) || (!configsData && !configsError)
+
   const fetchDashboardData = useCallback(async () => {
-    setLoading(true)
-    try {
-      const [subsRes, paymentsRes, configsRes] = await Promise.all([
-        fetch('/api/subscriptions', { cache: 'no-store' }),
-        fetch('/api/payments', { cache: 'no-store' }),
-        fetch('/api/trading-config', { cache: 'no-store' })
-      ])
-
-      if (subsRes.ok) {
-        const subsData = await subsRes.json()
-        setSubscriptions(subsData.subscriptions || [])
-      }
-
-      if (paymentsRes.ok) {
-        const paymentsData = await paymentsRes.json()
-        setPayments(paymentsData.payments || [])
-      }
-
-      if (configsRes.ok) {
-        const configsData = await configsRes.json()
-        setConfigs(configsData.configs || [])
-      }
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    let mounted = true
-    fetchDashboardData()
-    
-    return () => {
-      mounted = false
-    }
-  }, []) // Убираем fetchDashboardData из зависимостей
+    await Promise.all([mutateSubs(), mutatePayments(), mutateConfigs()])
+  }, [mutateSubs, mutatePayments, mutateConfigs])
 
   const handleConfigSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -250,7 +261,7 @@ export function DashboardClient() {
 
         {/* Status Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="glass-effect border-white/20">
+          <Card className="dashboard-glass border-white/20">
             <CardContent className="p-6">
               <div className="flex items-center">
                 <TrendingUp className="h-8 w-8 text-cyan-400 mr-3" />
@@ -264,7 +275,7 @@ export function DashboardClient() {
             </CardContent>
           </Card>
 
-          <Card className="glass-effect border-white/20">
+          <Card className="dashboard-glass border-white/20">
             <CardContent className="p-6">
               <div className="flex items-center">
                 <Bot className="h-8 w-8 text-green-400 mr-3" />
@@ -278,7 +289,7 @@ export function DashboardClient() {
             </CardContent>
           </Card>
 
-          <Card className="glass-effect border-white/20">
+          <Card className="dashboard-glass border-white/20">
             <CardContent className="p-6">
               <div className="flex items-center">
                 <Shield className="h-8 w-8 text-blue-400 mr-3" />
@@ -290,7 +301,7 @@ export function DashboardClient() {
             </CardContent>
           </Card>
 
-          <Card className="glass-effect border-white/20">
+          <Card className="dashboard-glass border-white/20">
             <CardContent className="p-6">
               <div className="flex items-center">
                 <Activity className="h-8 w-8 text-purple-400 mr-3" />
@@ -305,7 +316,7 @@ export function DashboardClient() {
 
         {/* Main Content */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="glass-effect border-white/20">
+          <TabsList className="dashboard-glass border-white/20">
             <TabsTrigger value="overview" className="text-white">Overview</TabsTrigger>
             <TabsTrigger value="config" className="text-white">Trading Config</TabsTrigger>
             <TabsTrigger value="subscriptions" className="text-white">Subscriptions</TabsTrigger>
@@ -314,7 +325,7 @@ export function DashboardClient() {
 
           <TabsContent value="overview">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="glass-effect border-white/20">
+              <Card className="dashboard-glass border-white/20">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
                     <User className="h-5 w-5 mr-2" />
@@ -339,7 +350,7 @@ export function DashboardClient() {
                 </CardContent>
               </Card>
 
-              <Card className="glass-effect border-white/20">
+              <Card className="dashboard-glass border-white/20">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
                     <Bot className="h-5 w-5 mr-2" />
@@ -377,7 +388,7 @@ export function DashboardClient() {
           </TabsContent>
 
           <TabsContent value="config">
-            <Card className="glass-effect border-white/20">
+            <Card className="dashboard-glass border-white/20">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <Settings className="h-5 w-5 mr-2" />
@@ -395,7 +406,7 @@ export function DashboardClient() {
                       <SelectTrigger className="bg-white/10 border-white/20 text-white">
                         <SelectValue placeholder="Bybit" />
                       </SelectTrigger>
-                      <SelectContent className="glass-effect border-white/20">
+                      <SelectContent className="dashboard-glass border-white/20">
                         <SelectItem value="bybit" className="text-white">Bybit</SelectItem>
                         <SelectItem value="binance" className="text-gray-400 cursor-not-allowed" disabled>
                           Binance - Coming soon
@@ -537,7 +548,7 @@ export function DashboardClient() {
           </TabsContent>
 
           <TabsContent value="subscriptions">
-            <Card className="glass-effect border-white/20">
+            <Card className="dashboard-glass border-white/20">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <Crown className="h-5 w-5 mr-2" />
@@ -593,7 +604,7 @@ export function DashboardClient() {
           </TabsContent>
 
           <TabsContent value="payments">
-            <Card className="glass-effect border-white/20">
+            <Card className="dashboard-glass border-white/20">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <CreditCard className="h-5 w-5 mr-2" />

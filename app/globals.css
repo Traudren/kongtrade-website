@@ -149,54 +149,9 @@ body {
   overflow-x: hidden;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 70% 30%, rgba(168, 85, 247, 0.1) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: -2;
-  /* Оптимизация для плавного рендеринга */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
+/* Упрощенные градиенты удалены для улучшения производительности - используется только основной градиент в body */
 
-body::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(2px 2px at 10px 20px, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(2px 2px at 40px 70px, rgba(59, 130, 246, 0.5), transparent),
-    radial-gradient(1px 1px at 90px 40px, rgba(139, 92, 246, 0.4), transparent),
-    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.3), transparent),
-    radial-gradient(2px 2px at 160px 30px, rgba(34, 211, 238, 0.4), transparent),
-    radial-gradient(1px 1px at 70px 110px, rgba(168, 85, 247, 0.3), transparent);
-  background-repeat: repeat;
-  background-size: 200px 100px;
-  animation: drift 20s linear infinite;
-  pointer-events: none;
-  z-index: -1;
-  /* Оптимизация для плавной анимации */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
+/* Анимация частиц удалена для улучшения производительности */
 
 html {
   scroll-behavior: smooth;
@@ -280,41 +235,7 @@ html {
   -webkit-backface-visibility: hidden;
 }
 
-/* Световые частицы */
-.light-particles::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(2px 2px at 10px 20px, rgba(255, 255, 255, 0.3), transparent),
-    radial-gradient(2px 2px at 40px 70px, rgba(0, 255, 255, 0.2), transparent),
-    radial-gradient(1px 1px at 90px 40px, rgba(144, 238, 144, 0.3), transparent),
-    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.2), transparent),
-    radial-gradient(2px 2px at 160px 30px, rgba(135, 206, 235, 0.25), transparent);
-  background-repeat: repeat;
-  background-size: 200px 100px;
-  animation: drift 20s linear infinite;
-  pointer-events: none;
-  z-index: -1;
-  /* Оптимизация для плавной анимации */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-@keyframes drift {
-  from { 
-    transform: translate3d(0, 0, 0);
-  }
-  to { 
-    transform: translate3d(0, -100px, 0);
-  }
-}
+/* Анимация частиц удалена для улучшения производительности */
 
 /* Оптимизация для уменьшения количества рефлоу и репинтов */
 .optimize-render {
@@ -335,6 +256,14 @@ html {
   -webkit-transform: translateZ(0);
   will-change: transform;
   isolation: isolate;
+}
+
+/* Упрощенная версия glass-effect для Dashboard (без backdrop-filter для лучшей производительности) */
+.dashboard-glass {
+  background: rgba(10, 17, 40, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .hover-glow:hover {

@@ -21,6 +21,16 @@ export async function GET(request: NextRequest) {
 
     const subscriptions = await prisma.subscription.findMany({
       where: { userId: session.user.id },
+      select: {
+        id: true,
+        planName: true,
+        planType: true,
+        price: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        createdAt: true
+      },
       orderBy: { createdAt: 'desc' }
     })
 

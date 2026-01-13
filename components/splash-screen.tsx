@@ -40,6 +40,7 @@ export function SplashScreen() {
                 width={300}
                 height={300}
                 className="mx-auto filter drop-shadow-2xl h-72 w-72"
+                priority
               />
             </motion.div>
             

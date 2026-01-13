@@ -100,6 +100,8 @@ export function AboutSection() {
                 alt="King Kong analyzing crypto market data with floating coins"
                 fill
                 className="object-cover rounded-lg"
+                loading="lazy"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-lg" />
             </div>
