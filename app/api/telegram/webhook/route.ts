@@ -158,54 +158,90 @@ export async function POST(request: NextRequest) {
         if (!payment) {
           console.error('❌ Payment not found:', paymentId)
           // Удаляем кнопки и отправляем сообщение об ошибке
-          await telegram.editMessageReplyMarkup(messageId!)
-          await telegram.sendMessage('❌ Payment not found')
+          if (messageId) {
+            try {
+              await telegram.editMessageReplyMarkup(messageId)
+            } catch (e) {
+              console.error('Error removing buttons:', e)
+            }
+          }
+          try {
+            await telegram.sendMessage('❌ Payment not found')
+          } catch (e) {
+            console.error('Error sending message:', e)
+          }
           return NextResponse.json({ ok: true })
         }
 
         if (payment.status !== 'PENDING') {
           console.warn('⚠️ Payment already processed:', payment.status)
           // Удаляем кнопки и отправляем сообщение
-          await telegram.editMessageReplyMarkup(messageId!)
-          await telegram.sendMessage(`⚠️ Payment already processed. Status: ${payment.status}`)
+          if (messageId) {
+            try {
+              await telegram.editMessageReplyMarkup(messageId)
+            } catch (e) {
+              console.error('Error removing buttons:', e)
+            }
+          }
+          try {
+            await telegram.sendMessage(`⚠️ Payment already processed. Status: ${payment.status}`)
+          } catch (e) {
+            console.error('Error sending message:', e)
+          }
           return NextResponse.json({ ok: true })
         }
 
-        // Обновляем статус платежа
-        await prisma.payment.update({
-          where: { id: paymentId },
-          data: { status: 'COMPLETED' }
-        })
+        try {
+          // Обновляем статус платежа
+          await prisma.payment.update({
+            where: { id: paymentId },
+            data: { status: 'COMPLETED' }
+          })
 
-        // Активируем подписку
-        if (payment.subscription) {
-          const startDate = new Date()
-          const endDate = new Date()
-          
-          // Вычисляем период подписки в днях
-          const days = payment.subscription.planType === 'monthly' ? 30 : 90
-          endDate.setDate(endDate.getDate() + days)
+          // Активируем подписку
+          if (payment.subscription) {
+            const startDate = new Date()
+            const endDate = new Date()
+            
+            // Вычисляем период подписки в днях
+            const days = payment.subscription.planType === 'monthly' ? 30 : 90
+            endDate.setDate(endDate.getDate() + days)
 
-          await prisma.subscription.update({
-            where: { id: payment.subscription.id },
-            data: {
-              status: 'ACTIVE',
-              startDate: startDate,
-              endDate: endDate
+            await prisma.subscription.update({
+              where: { id: payment.subscription.id },
+              data: {
+                status: 'ACTIVE',
+                startDate: startDate,
+                endDate: endDate
+              }
+            })
+
+            // Создаем конфигурационный файл
+            if (payment.user.configs && payment.user.configs.length > 0) {
+              const userConfig = payment.user.configs[0]
+              try {
+                await createUserConfigFile(payment.user, payment.subscription, userConfig)
+              } catch (fileError) {
+                console.error('Error creating config file:', fileError)
+                // Продолжаем выполнение даже если файл не создался
+              }
             }
-          })
 
-          // Создаем конфигурационный файл
-          if (payment.user.configs && payment.user.configs.length > 0) {
-            const userConfig = payment.user.configs[0]
-            await createUserConfigFile(payment.user, payment.subscription, userConfig)
+            // Сбрасываем счетчик попыток при успешной оплате
+            await prisma.user.update({
+              where: { id: payment.userId },
+              data: { paymentAttempts: 0 }
+            })
           }
-
-          // Сбрасываем счетчик попыток при успешной оплате
-          await prisma.user.update({
-            where: { id: payment.userId },
-            data: { paymentAttempts: 0 }
-          })
+        } catch (dbError) {
+          console.error('❌ Database error during payment approval:', dbError)
+          // Отправляем сообщение об ошибке
+          try {
+            await telegram.sendMessage('❌ Error processing payment. Please try again or contact support.')
+          } catch (e) {
+            console.error('Error sending error message:', e)
+          }
+          return NextResponse.json({ ok: true })
         }
 
         // Удаляем кнопки из оригинального сообщения (оставляем сообщение с файлом)
