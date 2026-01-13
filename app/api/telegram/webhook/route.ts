@@ -322,6 +322,9 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ ok: true })
         }
 
+        let newAttempts = 0
+        let blockedUntil: Date | null = null
+
         try {
           // Обновляем статус платежа на FAILED
           await prisma.payment.update({
@@ -335,8 +338,7 @@ export async function POST(request: NextRequest) {
           })
 
           if (user) {
-            const newAttempts = (user.paymentAttempts || 0) + 1
-            let blockedUntil: Date | null = null
+            newAttempts = (user.paymentAttempts || 0) + 1
 
             // Если 3 попытки - блокируем на 24 часа
             if (newAttempts >= 3) {
@@ -363,18 +365,18 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ ok: true })
         }
 
-          // Удаляем кнопки из оригинального сообщения (оставляем сообщение с файлом)
-          if (messageId) {
-            try {
-              await telegram.editMessageReplyMarkup(messageId)
-              console.log('✅ Buttons removed from original message')
-            } catch (e) {
-              console.error('Error removing buttons:', e)
-            }
+        // Удаляем кнопки из оригинального сообщения (оставляем сообщение с файлом)
+        if (messageId) {
+          try {
+            await telegram.editMessageReplyMarkup(messageId)
+            console.log('✅ Buttons removed from original message')
+          } catch (e) {
+            console.error('Error removing buttons:', e)
           }
+        }
 
-          // Отправляем новое сообщение с результатом
-          const rejectMessage = `❌ <b>Payment Rejected</b>
+        // Отправляем новое сообщение с результатом
+        const rejectMessage = `❌ <b>Payment Rejected</b>
 
 👤 <b>User:</b> ${payment.user.name || payment.user.email}
 💰 <b>Amount:</b> $${payment.amount}
@@ -383,12 +385,11 @@ ${blockedUntil ? `🚫 <b>Blocked until:</b> ${blockedUntil.toLocaleString()}` :
 
 ❌ Payment rejected. User can try again.`
 
-          try {
-            const sendResult = await telegram.sendMessage(rejectMessage)
-            console.log('✅ Reject message sent:', sendResult)
-          } catch (e) {
-            console.error('Error sending reject message:', e)
-          }
+        try {
+          const sendResult = await telegram.sendMessage(rejectMessage)
+          console.log('✅ Reject message sent:', sendResult)
+        } catch (e) {
+          console.error('Error sending reject message:', e)
         }
 
         return NextResponse.json({ ok: true })
