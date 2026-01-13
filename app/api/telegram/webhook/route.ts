@@ -120,21 +120,17 @@ export async function POST(request: NextRequest) {
 
         if (!payment) {
           console.error('❌ Payment not found:', paymentId)
-          await telegram.editMessageText(
-            messageId!,
-            '❌ Payment not found',
-            undefined
-          )
+          // Удаляем кнопки и отправляем сообщение об ошибке
+          await telegram.editMessageReplyMarkup(messageId!)
+          await telegram.sendMessage('❌ Payment not found')
           return NextResponse.json({ ok: true })
         }
 
         if (payment.status !== 'PENDING') {
           console.warn('⚠️ Payment already processed:', payment.status)
-          await telegram.editMessageText(
-            messageId!,
-            `⚠️ Payment already processed. Status: ${payment.status}`,
-            undefined
-          )
+          // Удаляем кнопки и отправляем сообщение
+          await telegram.editMessageReplyMarkup(messageId!)
+          await telegram.sendMessage(`⚠️ Payment already processed. Status: ${payment.status}`)
           return NextResponse.json({ ok: true })
         }
 
@@ -175,7 +171,11 @@ export async function POST(request: NextRequest) {
           })
         }
 
-        // Обновляем сообщение в Telegram
+        // Удаляем кнопки из оригинального сообщения (оставляем сообщение с файлом)
+        await telegram.editMessageReplyMarkup(messageId!)
+        console.log('✅ Buttons removed from original message')
+
+        // Отправляем новое сообщение с результатом
         const successMessage = `✅ <b>Payment Approved!</b>
 
 👤 <b>User:</b> ${payment.user.name || payment.user.email}
@@ -185,8 +185,8 @@ export async function POST(request: NextRequest) {
 
 ✅ Subscription activated and config file created.`
 
-        const editResult = await telegram.editMessageText(messageId!, successMessage, undefined)
-        console.log('✅ Message edited:', editResult)
+        const sendResult = await telegram.sendMessage(successMessage)
+        console.log('✅ Success message sent:', sendResult)
 
         return NextResponse.json({ ok: true })
 
@@ -205,21 +205,17 @@ export async function POST(request: NextRequest) {
 
         if (!payment) {
           console.error('❌ Payment not found:', paymentId)
-          await telegram.editMessageText(
-            messageId!,
-            '❌ Payment not found',
-            undefined
-          )
+          // Удаляем кнопки и отправляем сообщение об ошибке
+          await telegram.editMessageReplyMarkup(messageId!)
+          await telegram.sendMessage('❌ Payment not found')
           return NextResponse.json({ ok: true })
         }
 
         if (payment.status !== 'PENDING') {
           console.warn('⚠️ Payment already processed:', payment.status)
-          await telegram.editMessageText(
-            messageId!,
-            `⚠️ Payment already processed. Status: ${payment.status}`,
-            undefined
-          )
+          // Удаляем кнопки и отправляем сообщение
+          await telegram.editMessageReplyMarkup(messageId!)
+          await telegram.sendMessage(`⚠️ Payment already processed. Status: ${payment.status}`)
           return NextResponse.json({ ok: true })
         }
 
@@ -252,7 +248,11 @@ export async function POST(request: NextRequest) {
             }
           })
 
-          // Обновляем сообщение в Telegram
+          // Удаляем кнопки из оригинального сообщения (оставляем сообщение с файлом)
+          await telegram.editMessageReplyMarkup(messageId!)
+          console.log('✅ Buttons removed from original message')
+
+          // Отправляем новое сообщение с результатом
           const rejectMessage = `❌ <b>Payment Rejected</b>
 
 👤 <b>User:</b> ${payment.user.name || payment.user.email}
@@ -262,8 +262,8 @@ ${blockedUntil ? `🚫 <b>Blocked until:</b> ${blockedUntil.toLocaleString()}` :
 
 ❌ Payment rejected. User can try again.`
 
-          const editResult = await telegram.editMessageText(messageId!, rejectMessage, undefined)
-          console.log('✅ Reject message edited:', editResult)
+          const sendResult = await telegram.sendMessage(rejectMessage)
+          console.log('✅ Reject message sent:', sendResult)
         }
 
         return NextResponse.json({ ok: true })

@@ -85,6 +85,35 @@ export class TelegramBot {
     }
   }
 
+  async editMessageReplyMarkup(messageId: number, replyMarkup?: any): Promise<boolean> {
+    try {
+      const body: any = {
+        chat_id: this.adminId,
+        message_id: messageId,
+      }
+
+      if (replyMarkup) {
+        body.reply_markup = replyMarkup
+      } else {
+        // Если replyMarkup не передан, удаляем кнопки (пустой inline_keyboard)
+        body.reply_markup = { inline_keyboard: [] }
+      }
+
+      const response = await fetch(`https://api.telegram.org/bot${this.token}/editMessageReplyMarkup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      return response.ok
+    } catch (error) {
+      console.error('Telegram edit message reply markup error:', error)
+      return false
+    }
+  }
+
   async answerCallbackQuery(callbackQueryId: string, text?: string): Promise<boolean> {
     try {
       const response = await fetch(`https://api.telegram.org/bot${this.token}/answerCallbackQuery`, {
