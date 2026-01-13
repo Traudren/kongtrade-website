@@ -289,47 +289,79 @@ export async function POST(request: NextRequest) {
         if (!payment) {
           console.error('❌ Payment not found:', paymentId)
           // Удаляем кнопки и отправляем сообщение об ошибке
-          await telegram.editMessageReplyMarkup(messageId!)
-          await telegram.sendMessage('❌ Payment not found')
+          if (messageId) {
+            try {
+              await telegram.editMessageReplyMarkup(messageId)
+            } catch (e) {
+              console.error('Error removing buttons:', e)
+            }
+          }
+          try {
+            await telegram.sendMessage('❌ Payment not found')
+          } catch (e) {
+            console.error('Error sending message:', e)
+          }
           return NextResponse.json({ ok: true })
         }
 
         if (payment.status !== 'PENDING') {
           console.warn('⚠️ Payment already processed:', payment.status)
           // Удаляем кнопки и отправляем сообщение
-          await telegram.editMessageReplyMarkup(messageId!)
-          await telegram.sendMessage(`⚠️ Payment already processed. Status: ${payment.status}`)
+          if (messageId) {
+            try {
+              await telegram.editMessageReplyMarkup(messageId)
+            } catch (e) {
+              console.error('Error removing buttons:', e)
+            }
+          }
+          try {
+            await telegram.sendMessage(`⚠️ Payment already processed. Status: ${payment.status}`)
+          } catch (e) {
+            console.error('Error sending message:', e)
+          }
           return NextResponse.json({ ok: true })
         }
 
-        // Обновляем статус платежа на FAILED
-        await prisma.payment.update({
-          where: { id: paymentId },
-          data: { status: 'FAILED' }
-        })
-
-        // Увеличиваем счетчик попыток
-        const user = await prisma.user.findUnique({
-          where: { id: payment.userId }
-        })
-
-        if (user) {
-          const newAttempts = (user.paymentAttempts || 0) + 1
-          let blockedUntil: Date | null = null
-
-          // Если 3 попытки - блокируем на 24 часа
-          if (newAttempts >= 3) {
-            blockedUntil = new Date()
-            blockedUntil.setHours(blockedUntil.getHours() + 24)
-          }
-
-          await prisma.user.update({
-            where: { id: payment.userId },
-            data: {
-              paymentAttempts: newAttempts,
-              blockedUntil: blockedUntil
-            }
+        try {
+          // Обновляем статус платежа на FAILED
+          await prisma.payment.update({
+            where: { id: paymentId },
+            data: { status: 'FAILED' }
           })
+
+          // Увеличиваем счетчик попыток
+          const user = await prisma.user.findUnique({
+            where: { id: payment.userId }
+          })
+
+          if (user) {
+            const newAttempts = (user.paymentAttempts || 0) + 1
+            let blockedUntil: Date | null = null
+
+            // Если 3 попытки - блокируем на 24 часа
+            if (newAttempts >= 3) {
+              blockedUntil = new Date()
+              blockedUntil.setHours(blockedUntil.getHours() + 24)
+            }
+
+            await prisma.user.update({
+              where: { id: payment.userId },
+              data: {
+                paymentAttempts: newAttempts,
+                blockedUntil: blockedUntil
+              }
+            })
+          }
+        } catch (dbError) {
+          console.error('❌ Database error during payment rejection:', dbError)
+          // Отправляем сообщение об ошибке
+          try {
+            await telegram.sendMessage('❌ Error processing payment rejection. Please contact support.')
+          } catch (e) {
+            console.error('Error sending error message:', e)
+          }
+          return NextResponse.json({ ok: true })
+        }
 
           // Удаляем кнопки из оригинального сообщения (оставляем сообщение с файлом)
           if (messageId) {
