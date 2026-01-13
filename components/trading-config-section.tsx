@@ -182,15 +182,7 @@ export function TradingConfigSection() {
                     className="flex h-10 w-full items-center justify-between rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white ring-offset-background focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2"
                   >
                     <span className="block truncate flex items-center">
-                      {exchange === 'binance' ? (
-                        <>
-                          <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#F0B90B"/>
-                            <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#F0B90B"/>
-                          </svg>
-                          Binance
-                        </>
-                      ) : exchange === 'bybit' ? (
+                      {exchange === 'bybit' ? (
                         <>
                           <svg className="w-5 h-5 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="12" cy="12" r="10" fill="#F7A600"/>
@@ -199,7 +191,7 @@ export function TradingConfigSection() {
                           Bybit
                         </>
                       ) : (
-                        'Выберите биржу'
+                        'Bybit'
                       )}
                     </span>
                     <ChevronDown className="h-4 w-4 opacity-50" />
@@ -241,7 +233,7 @@ export function TradingConfigSection() {
                             e.stopPropagation()
                             toast({
                               title: "Coming Soon",
-                              description: "Coming soon - binance, bingx, bitget, mexc",
+                              description: "Coming soon - binance",
                               variant: "default",
                             })
                             setExchangeDropdownOpen(false)
@@ -256,9 +248,63 @@ export function TradingConfigSection() {
                           <span>Binance</span>
                           <span className="ml-auto text-xs text-gray-500">Coming Soon</span>
                         </button>
-                        <div className="px-3 py-2 text-xs text-gray-500 border-t border-white/10 mt-1 pt-2">
-                          Coming soon: binance, bingx, bitget, mexc
-                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            toast({
+                              title: "Coming Soon",
+                              description: "Coming soon - mexc",
+                              variant: "default",
+                            })
+                            setExchangeDropdownOpen(false)
+                          }}
+                          className="w-full flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-white/5 transition-colors cursor-not-allowed opacity-60"
+                          disabled
+                        >
+                          <div className="w-5 h-5 mr-2 flex-shrink-0 rounded-full bg-gray-600"></div>
+                          <span>MEXC</span>
+                          <span className="ml-auto text-xs text-gray-500">Coming Soon</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            toast({
+                              title: "Coming Soon",
+                              description: "Coming soon - bingx",
+                              variant: "default",
+                            })
+                            setExchangeDropdownOpen(false)
+                          }}
+                          className="w-full flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-white/5 transition-colors cursor-not-allowed opacity-60"
+                          disabled
+                        >
+                          <div className="w-5 h-5 mr-2 flex-shrink-0 rounded-full bg-gray-600"></div>
+                          <span>BingX</span>
+                          <span className="ml-auto text-xs text-gray-500">Coming Soon</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            toast({
+                              title: "Coming Soon",
+                              description: "Coming soon - bitget",
+                              variant: "default",
+                            })
+                            setExchangeDropdownOpen(false)
+                          }}
+                          className="w-full flex items-center px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-white/5 transition-colors cursor-not-allowed opacity-60"
+                          disabled
+                        >
+                          <div className="w-5 h-5 mr-2 flex-shrink-0 rounded-full bg-gray-600"></div>
+                          <span>Bitget</span>
+                          <span className="ml-auto text-xs text-gray-500">Coming Soon</span>
+                        </button>
                       </div>
                     </div>
                   )}
