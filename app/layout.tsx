@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     images: ['https://i.ytimg.com/vi/GoQVS20Jcko/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAQJtvi5v-w2pUrbAYR2cPkK3BxsA'],
   },
   verification: {
-    google: 'add_your_google_site_verification_code_here',
+    google: '8-_-m8Mn_NRNiRao9kKx6r7a1p99EU8KCTA7o4aFXss',
   },
 }
 
