@@ -37,11 +37,11 @@ export default function ForgotPasswordPage() {
           <div className="text-center mb-8">
             <div className="mb-6">
               <Image
-                src="https://cdn.abacus.ai/images/b7c4089b-59d3-4cdc-9d72-bca87e0768c3.png"
+                src="/logo.png"
                 alt="KongTrade"
                 width={200}
-                height={60}
-                className="mx-auto"
+                height={200}
+                className="mx-auto h-20 w-20 rounded-lg"
               />
             </div>
             

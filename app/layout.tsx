@@ -48,9 +48,9 @@ export const metadata: Metadata = {
     siteName: 'KongTrade',
     images: [
       {
-        url: 'https://i.ytimg.com/vi/GoQVS20Jcko/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAQJtvi5v-w2pUrbAYR2cPkK3BxsA',
-        width: 1200,
-        height: 630,
+        url: 'https://kongtrade.com/logo.png',
+        width: 368,
+        height: 366,
         alt: 'KongTrade - Automated Cryptocurrency Trading Bot',
       }
     ],
@@ -58,11 +58,11 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     title: 'KongTrade - Automated Crypto Trading Bot',
     description: 'Professional AI-powered trading bot for cryptocurrency markets. Binance & Bybit integration.',
     creator: '@KongTrade_bot',
-    images: ['https://i.ytimg.com/vi/GoQVS20Jcko/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAQJtvi5v-w2pUrbAYR2cPkK3BxsA'],
+    images: ['https://kongtrade.com/logo.png'],
   },
   verification: {
     google: '8-_-m8Mn_NRNiRao9kKx6r7a1p99EU8KCTA7o4aFXss',

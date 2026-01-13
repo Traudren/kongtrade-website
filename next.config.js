@@ -15,11 +15,6 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'cdn.abacus.ai',
-        pathname: '/images/**',
-      },
-      {
-        protocol: 'https',
         hostname: 'i.ytimg.com',
         pathname: '/**',
       },
