@@ -70,7 +70,7 @@ export function DashboardClient() {
   const [showApiSecret, setShowApiSecret] = useState(false)
   
   // Form states
-  const [exchange, setExchange] = useState('')
+  const [exchange, setExchange] = useState('bybit')
   const [apiKey, setApiKey] = useState('')
   const [apiSecret, setApiSecret] = useState('')
 
@@ -135,7 +135,7 @@ export function DashboardClient() {
           title: 'Configuration Saved',
           description: 'Trading configuration saved successfully!',
         })
-        setExchange('')
+        setExchange('bybit')
         setApiKey('')
         setApiSecret('')
         fetchDashboardData()
@@ -393,11 +393,22 @@ export function DashboardClient() {
                     <Label htmlFor="exchange" className="text-white">Exchange</Label>
                     <Select value={exchange} onValueChange={setExchange}>
                       <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                        <SelectValue placeholder="Select exchange" />
+                        <SelectValue placeholder="Bybit" />
                       </SelectTrigger>
                       <SelectContent className="glass-effect border-white/20">
-                        <SelectItem value="binance" className="text-white">Binance</SelectItem>
                         <SelectItem value="bybit" className="text-white">Bybit</SelectItem>
+                        <SelectItem value="binance" className="text-gray-400 cursor-not-allowed" disabled>
+                          Binance - Coming soon
+                        </SelectItem>
+                        <SelectItem value="mexc" className="text-gray-400 cursor-not-allowed" disabled>
+                          MEXC - Coming soon
+                        </SelectItem>
+                        <SelectItem value="bingx" className="text-gray-400 cursor-not-allowed" disabled>
+                          BingX - Coming soon
+                        </SelectItem>
+                        <SelectItem value="bitget" className="text-gray-400 cursor-not-allowed" disabled>
+                          Bitget - Coming soon
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
