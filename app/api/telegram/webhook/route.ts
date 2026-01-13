@@ -93,12 +93,26 @@ export async function POST(request: NextRequest) {
         message: callbackQuery.message
       })
 
+      // Проверяем наличие обязательных данных
+      if (!callbackData) {
+        console.error('❌ Callback data is missing')
+        return NextResponse.json({ ok: true })
+      }
+
+      if (!callbackQueryId) {
+        console.error('❌ Callback query ID is missing')
+        return NextResponse.json({ ok: true })
+      }
+
       // Парсим paymentId из callback_data для определения бота
       let paymentId: string | null = null
       if (callbackData.startsWith('approve_payment_')) {
         paymentId = callbackData.replace('approve_payment_', '')
       } else if (callbackData.startsWith('reject_payment_')) {
         paymentId = callbackData.replace('reject_payment_', '')
+      } else {
+        console.log('ℹ️ Unknown callback data:', callbackData)
+        return NextResponse.json({ ok: true })
       }
 
       // Получаем платеж для определения бота
@@ -195,8 +209,14 @@ export async function POST(request: NextRequest) {
         }
 
         // Удаляем кнопки из оригинального сообщения (оставляем сообщение с файлом)
-        await telegram.editMessageReplyMarkup(messageId!)
-        console.log('✅ Buttons removed from original message')
+        if (messageId) {
+          try {
+            await telegram.editMessageReplyMarkup(messageId)
+            console.log('✅ Buttons removed from original message')
+          } catch (e) {
+            console.error('Error removing buttons:', e)
+          }
+        }
 
         // Отправляем новое сообщение с результатом
         const successMessage = `✅ <b>Payment Approved!</b>
@@ -208,8 +228,12 @@ export async function POST(request: NextRequest) {
 
 ✅ Subscription activated and config file created.`
 
-        const sendResult = await telegram.sendMessage(successMessage)
-        console.log('✅ Success message sent:', sendResult)
+        try {
+          const sendResult = await telegram.sendMessage(successMessage)
+          console.log('✅ Success message sent:', sendResult)
+        } catch (e) {
+          console.error('Error sending success message:', e)
+        }
 
         return NextResponse.json({ ok: true })
 
@@ -272,8 +296,14 @@ export async function POST(request: NextRequest) {
           })
 
           // Удаляем кнопки из оригинального сообщения (оставляем сообщение с файлом)
-          await telegram.editMessageReplyMarkup(messageId!)
-          console.log('✅ Buttons removed from original message')
+          if (messageId) {
+            try {
+              await telegram.editMessageReplyMarkup(messageId)
+              console.log('✅ Buttons removed from original message')
+            } catch (e) {
+              console.error('Error removing buttons:', e)
+            }
+          }
 
           // Отправляем новое сообщение с результатом
           const rejectMessage = `❌ <b>Payment Rejected</b>
@@ -285,8 +315,12 @@ ${blockedUntil ? `🚫 <b>Blocked until:</b> ${blockedUntil.toLocaleString()}` :
 
 ❌ Payment rejected. User can try again.`
 
-          const sendResult = await telegram.sendMessage(rejectMessage)
-          console.log('✅ Reject message sent:', sendResult)
+          try {
+            const sendResult = await telegram.sendMessage(rejectMessage)
+            console.log('✅ Reject message sent:', sendResult)
+          } catch (e) {
+            console.error('Error sending reject message:', e)
+          }
         }
 
         return NextResponse.json({ ok: true })
