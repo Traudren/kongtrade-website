@@ -54,6 +54,15 @@ sub_period = '${subPeriod}'`
   }
 }
 
+// GET endpoint для проверки доступности webhook
+export async function GET(request: NextRequest) {
+  return NextResponse.json({ 
+    status: 'ok', 
+    message: 'Telegram webhook is available',
+    timestamp: new Date().toISOString()
+  })
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -63,9 +72,10 @@ export async function POST(request: NextRequest) {
     console.log('📥 Webhook body type:', typeof body)
     console.log('📥 Body keys:', Object.keys(body))
     
-    // Telegram может отправлять update объект напрямую
-    // Проверяем оба варианта: body.callback_query и body.update?.callback_query
-    const callbackQuery = body.callback_query || body.update?.callback_query || body.message?.callback_query
+    // Telegram Bot API отправляет данные в формате update объекта
+    // Структура: { update_id: 123, callback_query: {...} }
+    // Проверяем callback_query напрямую в body (это и есть update объект)
+    const callbackQuery = body.callback_query
     
     // Обработка callback query от inline кнопок
     if (callbackQuery) {
