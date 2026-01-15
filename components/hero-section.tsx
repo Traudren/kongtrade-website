@@ -3,6 +3,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 import { ArrowRight, TrendingUp, Shield, Zap } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
@@ -87,32 +88,51 @@ export function HeroSection() {
             </div>
           </motion.div>
 
-          {/* Right content - Stats */}
+          {/* Right content - Hero Image */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="relative flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center"
+            className="relative"
           >
-            {/* Stats */}
+            <div className="relative aspect-video rounded-2xl overflow-hidden glass-effect p-4">
+              <Image
+                src="https://cdn.abacus.ai/images/51017a31-4f90-432a-9fb5-cae6bdcfe52c.png"
+                alt="KongTrade King Kong Trading Platform"
+                fill
+                className="object-cover rounded-lg"
+                priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-lg" />
+            </div>
+            
+            {/* Floating stats */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.8 }}
-              className="glass-effect rounded-xl p-6 text-center"
+              className="relative flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mt-4 sm:mt-6"
             >
-              <div className="text-2xl sm:text-3xl font-bold text-cyan-400">75%</div>
-              <div className="text-sm sm:text-base text-gray-300 mt-1">Prediction Accuracy</div>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                className="glass-effect rounded-xl p-6 text-center"
+              >
+                <div className="text-2xl sm:text-3xl font-bold text-cyan-400">75%</div>
+                <div className="text-sm sm:text-base text-gray-300 mt-1">Prediction Accuracy</div>
+              </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 1 }}
-              className="glass-effect rounded-xl p-6 text-center"
-            >
-              <div className="text-2xl sm:text-3xl font-bold text-green-400">+40%</div>
-              <div className="text-sm sm:text-base text-gray-300 mt-1">Average Profit</div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 1 }}
+                className="glass-effect rounded-xl p-6 text-center"
+              >
+                <div className="text-2xl sm:text-3xl font-bold text-green-400">+40%</div>
+                <div className="text-sm sm:text-base text-gray-300 mt-1">Average Profit</div>
+              </motion.div>
             </motion.div>
           </motion.div>
         </div>

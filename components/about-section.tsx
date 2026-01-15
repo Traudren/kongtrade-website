@@ -3,6 +3,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Shield, Zap, TrendingUp, Users, Award, Clock } from 'lucide-react'
 
 const features = [
@@ -85,35 +86,55 @@ export function AboutSection() {
             </div>
           </motion.div>
 
-          {/* Right content - Stats */}
+          {/* Right content - Image */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             viewport={{ once: true }}
-            className="relative flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center"
+            className="relative"
           >
-            {/* Achievement cards */}
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden glass-effect p-4">
+              <Image
+                src="https://cdn.abacus.ai/images/0a6ab9c9-7975-4868-8283-ea39fd8ccffb.png"
+                alt="King Kong analyzing crypto market data with floating coins"
+                fill
+                className="object-cover rounded-lg"
+                loading="lazy"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-lg" />
+            </div>
+            
+            {/* Floating achievement cards */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.8 }}
               viewport={{ once: true }}
-              className="glass-effect rounded-xl p-4 sm:p-6 text-center"
+              className="relative flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mt-4 sm:mt-6"
             >
-              <div className="text-2xl sm:text-3xl font-bold text-green-400">1K+</div>
-              <div className="text-sm sm:text-base text-gray-300 mt-1">Active Traders</div>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                viewport={{ once: true }}
+                className="glass-effect rounded-xl p-4 sm:p-6 text-center"
+              >
+                <div className="text-2xl sm:text-3xl font-bold text-green-400">1K+</div>
+                <div className="text-sm sm:text-base text-gray-300 mt-1">Active Traders</div>
+              </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 1 }}
-              viewport={{ once: true }}
-              className="glass-effect rounded-xl p-4 sm:p-6 text-center"
-            >
-              <div className="text-2xl sm:text-3xl font-bold text-cyan-400">$400K+</div>
-              <div className="text-sm sm:text-base text-gray-300 mt-1">Trading Volume</div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 1 }}
+                viewport={{ once: true }}
+                className="glass-effect rounded-xl p-4 sm:p-6 text-center"
+              >
+                <div className="text-2xl sm:text-3xl font-bold text-cyan-400">$400K+</div>
+                <div className="text-sm sm:text-base text-gray-300 mt-1">Trading Volume</div>
+              </motion.div>
             </motion.div>
           </motion.div>
         </div>
