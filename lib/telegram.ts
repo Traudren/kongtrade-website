@@ -12,17 +12,104 @@ interface TelegramMessage {
 export class TelegramBot {
   private token: string
   private adminId: string
+  private lastRequestTime: number = 0
+  private readonly minDelayBetweenRequests: number = 1000 // 1 секунда между запросами
 
   constructor(exchange?: string) {
-    // Для Bybit используем старый токен, для Binance - новый
+    // Для Bybit используем новый токен, для Binance - старый
     if (exchange === 'binance') {
       this.token = '8309802088:AAG_HRvqhCt-USSViH172EUaI4VwrucTKU0'
       this.adminId = '5351584188'
     } else {
-      // По умолчанию для Bybit
-    this.token = '7585793273:AAFw5sP4xz0WnFYL2P3Vgm4jRjef_RgRKGc'
-    this.adminId = '5351584188'
+      // По умолчанию для Bybit - новый токен
+      this.token = '8419770498:AAH_Kqf_70_NCZ5OBhwr5lYiSdEhGkm8bG0'
+      this.adminId = '5351584188'
     }
+  }
+
+  // Rate limiting: задержка между запросами
+  private async waitForRateLimit(): Promise<void> {
+    const now = Date.now()
+    const timeSinceLastRequest = now - this.lastRequestTime
+    
+    if (timeSinceLastRequest < this.minDelayBetweenRequests) {
+      const waitTime = this.minDelayBetweenRequests - timeSinceLastRequest
+      await new Promise(resolve => setTimeout(resolve, waitTime))
+    }
+    
+    this.lastRequestTime = Date.now()
+  }
+
+  // Обработка ошибок API Telegram с повторными попытками
+  private async handleApiRequest<T>(
+    requestFn: () => Promise<Response>,
+    maxRetries: number = 3
+  ): Promise<{ success: boolean; data?: T; error?: string }> {
+    let lastError: string | undefined
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        // Rate limiting перед каждым запросом
+        await this.waitForRateLimit()
+        
+        const response = await requestFn()
+        
+        // Обработка 429 (Too Many Requests)
+        if (response.status === 429) {
+          const retryAfter = response.headers.get('Retry-After')
+          const waitTime = retryAfter 
+            ? parseInt(retryAfter) * 1000 
+            : Math.min(1000 * Math.pow(2, attempt), 60000) // Exponential backoff, максимум 60 секунд
+          
+          console.warn(`⚠️ Rate limit hit (429). Waiting ${waitTime}ms before retry ${attempt + 1}/${maxRetries}`)
+          
+          if (attempt < maxRetries - 1) {
+            await new Promise(resolve => setTimeout(resolve, waitTime))
+            continue
+          }
+          
+          return { success: false, error: 'Rate limit exceeded. Please try again later.' }
+        }
+        
+        // Обработка других ошибок
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          const errorDescription = errorData.description || `HTTP ${response.status}`
+          
+          console.error(`❌ Telegram API error (${response.status}):`, errorDescription)
+          
+          // Для некоторых ошибок не стоит повторять попытку
+          if (response.status === 400 || response.status === 401 || response.status === 403) {
+            return { success: false, error: errorDescription }
+          }
+          
+          // Для других ошибок повторяем попытку
+          if (attempt < maxRetries - 1) {
+            const waitTime = Math.min(1000 * Math.pow(2, attempt), 10000) // Exponential backoff, максимум 10 секунд
+            console.warn(`⚠️ Retrying after ${waitTime}ms (attempt ${attempt + 1}/${maxRetries})`)
+            await new Promise(resolve => setTimeout(resolve, waitTime))
+            continue
+          }
+          
+          return { success: false, error: errorDescription }
+        }
+        
+        // Успешный ответ
+        const data = await response.json()
+        return { success: true, data }
+        
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : String(error)
+        console.error(`❌ Telegram API request error (attempt ${attempt + 1}/${maxRetries}):`, lastError)
+        
+        if (attempt < maxRetries - 1) {
+          const waitTime = Math.min(1000 * Math.pow(2, attempt), 10000)
+          await new Promise(resolve => setTimeout(resolve, waitTime))
+        }
+      }
+    }
+    
+    return { success: false, error: lastError || 'Unknown error after retries' }
   }
 
   async sendMessage(text: string, replyMarkup?: any): Promise<{ success: boolean; messageId?: number }> {
@@ -37,17 +124,18 @@ export class TelegramBot {
         body.reply_markup = replyMarkup
       }
 
-      const response = await fetch(`https://api.telegram.org/bot${this.token}/sendMessage`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      })
+      const result = await this.handleApiRequest<any>(() =>
+        fetch(`https://api.telegram.org/bot${this.token}/sendMessage`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        })
+      )
 
-      if (response.ok) {
-        const data = await response.json()
-        return { success: true, messageId: data.result?.message_id }
+      if (result.success && result.data) {
+        return { success: true, messageId: result.data.result?.message_id }
       }
 
       return { success: false }
@@ -70,15 +158,17 @@ export class TelegramBot {
         body.reply_markup = replyMarkup
       }
 
-      const response = await fetch(`https://api.telegram.org/bot${this.token}/editMessageText`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      })
+      const result = await this.handleApiRequest(() =>
+        fetch(`https://api.telegram.org/bot${this.token}/editMessageText`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        })
+      )
 
-      return response.ok
+      return result.success || false
     } catch (error) {
       console.error('Telegram edit message error:', error)
       return false
@@ -99,15 +189,17 @@ export class TelegramBot {
         body.reply_markup = { inline_keyboard: [] }
       }
 
-      const response = await fetch(`https://api.telegram.org/bot${this.token}/editMessageReplyMarkup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      })
+      const result = await this.handleApiRequest(() =>
+        fetch(`https://api.telegram.org/bot${this.token}/editMessageReplyMarkup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        })
+      )
 
-      return response.ok
+      return result.success || false
     } catch (error) {
       console.error('Telegram edit message reply markup error:', error)
       return false
@@ -116,18 +208,20 @@ export class TelegramBot {
 
   async answerCallbackQuery(callbackQueryId: string, text?: string): Promise<boolean> {
     try {
-      const response = await fetch(`https://api.telegram.org/bot${this.token}/answerCallbackQuery`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          callback_query_id: callbackQueryId,
-          text: text || 'Processing...',
-        }),
-      })
+      const result = await this.handleApiRequest(() =>
+        fetch(`https://api.telegram.org/bot${this.token}/answerCallbackQuery`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            callback_query_id: callbackQueryId,
+            text: text || 'Processing...',
+          }),
+        })
+      )
 
-      return response.ok
+      return result.success || false
     } catch (error) {
       console.error('Telegram answer callback error:', error)
       return false
@@ -150,14 +244,15 @@ export class TelegramBot {
         formData.append('reply_markup', JSON.stringify(replyMarkup))
       }
 
-      const response = await fetch(`https://api.telegram.org/bot${this.token}/sendDocument`, {
-        method: 'POST',
-        body: formData,
-      })
+      const result = await this.handleApiRequest<any>(() =>
+        fetch(`https://api.telegram.org/bot${this.token}/sendDocument`, {
+          method: 'POST',
+          body: formData,
+        })
+      )
 
-      if (response.ok) {
-        const data = await response.json()
-        return { success: true, messageId: data.result?.message_id }
+      if (result.success && result.data) {
+        return { success: true, messageId: result.data.result?.message_id }
       }
 
       return { success: false }
